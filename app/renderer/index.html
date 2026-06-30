@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>YiboBattleSwitch</title>
+  <link href="../../logo.png" rel="icon" type="image/png">
+  <link href="../../dist/renderer/styles.css" rel="stylesheet">
+</head>
+<body class="h-screen overflow-hidden text-ink">
+  <div class="h-screen bg-surface">
+    <main class="flex h-screen flex-col overflow-hidden">
+      <div class="app-titlebar flex-none border-b border-stroke px-6 py-5">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <img alt="YiboBattleSwitch Logo" class="h-11 w-11 rounded-[12px] object-cover shadow-sm" src="../../logo.png">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="text-[17px] font-bold text-primary" id="wordmark">YiboBattleSwitch</span>
+                <span class="text-[13px] text-slate-400" id="versionLabel">v0.3.6</span>
+                <span class="text-[13px] text-slate-300">/</span>
+                <span class="text-[18px] font-semibold text-ink" id="appTitleInline">暴雪战网 Battle.net 切换工具</span>
+              </div>
+            </div>
+          </div>
+          <div class="window-controls flex items-center">
+            <button class="window-control-btn" id="windowMinBtn" type="button" aria-label="最小化">
+              <span class="window-control-icon" aria-hidden="true"></span>
+            </button>
+            <button class="window-control-btn" id="windowMaxBtn" type="button" aria-label="最大化">
+              <span class="window-control-icon window-control-icon-max" aria-hidden="true"></span>
+            </button>
+            <button class="window-control-btn window-control-btn-close" id="windowCloseBtn" type="button" aria-label="关闭">
+              <span class="window-control-icon window-control-icon-close" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <section class="flex-1 min-h-0 overflow-y-auto bg-surface">
+        <div class="w-full flex-1 px-8 pb-4 pt-3">
+          <section class="mt-3 rounded-card border border-stroke bg-surface-soft px-6 py-5 shadow-card">
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-[13px] font-bold text-ink">安装目录</span>
+              <div class="h-[40px] flex-1 px-4">
+                <div class="notice-idle rounded-[10px] border px-4 py-2 text-[14px] font-medium transition-opacity" id="noticeBanner"></div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center gap-3">
+              <div class="relative flex-1 overflow-hidden rounded-[10px] border border-stroke bg-surface">
+                <span class="action-icon absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24">
+                    <path d="M3.75 7.5h5l1.75 2h8.75a1 1 0 0 1 1 1v7a1.75 1.75 0 0 1-1.75 1.75H5.5A1.75 1.75 0 0 1 3.75 17.5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                  </svg>
+                </span>
+                <input class="mono h-12 w-full border-0 bg-transparent pl-12 pr-[180px] text-[14px] text-ink outline-none ring-0" id="gameDirField" type="text">
+                <div class="absolute inset-y-0 right-2 flex items-center gap-2">
+                  <button class="hidden h-8 rounded-[8px] bg-primary px-3 text-[13px] font-semibold text-white shadow-[0_8px_18px_rgba(29,161,242,0.22)]" id="confirmGameDirBtn" type="button">确认</button>
+                  <button class="h-8 rounded-[8px] border border-stroke bg-surface-soft px-3 text-[13px] font-semibold text-ink hover:bg-white" id="pickFolderBtn" type="button">手动选择</button>
+                </div>
+              </div>
+              <button class="hover-lift press-scale h-12 rounded-[10px] border border-stroke bg-surface px-5 text-[14px] font-semibold text-ink shadow-sm" id="autoSearchBtn" type="button">自动搜索</button>
+            </div>
+          </section>
+
+          <section class="mt-6">
+            <div class="flex flex-wrap items-center gap-3">
+              <button class="hover-lift press-scale flex h-12 items-center gap-2 rounded-button bg-primary px-9 text-[15px] font-bold text-white shadow-[0_10px_22px_rgba(29,161,242,0.28)]" id="switchBtn" type="button">
+                <span class="action-icon" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24">
+                    <path d="M8.5 7.5h9m0 0-3-3m3 3-3 3M15.5 16.5h-9m0 0 3 3m-3-3 3-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9"/>
+                  </svg>
+                </span>
+                切换到此账号
+              </button>
+              <div class="mx-1 h-9 w-px bg-stroke"></div>
+              <button class="hover-lift press-scale save-action-btn flex h-12 items-center gap-2 rounded-button px-5 text-[14px] font-semibold" id="saveBtn" type="button">
+                <span class="action-icon text-slate-600" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24">
+                    <path d="M6 4.75h9.5l2.75 2.75V19.25a1 1 0 0 1-1 1H6.75a1 1 0 0 1-1-1V5.75a1 1 0 0 1 1-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    <path d="M8.25 4.75v5h7.5v-5M8.75 20.25v-5h6.5v5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                  </svg>
+                </span>
+                保存当前登录
+              </button>
+              <button class="hover-lift press-scale flex h-12 items-center gap-2 rounded-button border border-stroke bg-surface px-5 text-[14px] font-semibold text-ink shadow-sm" id="backupBtn" type="button">
+                <span class="action-icon text-slate-600" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24">
+                    <path d="M5.75 7.75h12.5a1.5 1.5 0 0 1 1.5 1.5v8a2 2 0 0 1-2 2H6.25a2 2 0 0 1-2-2v-8a1.5 1.5 0 0 1 1.5-1.5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    <path d="M8.5 7.75V5.5A1.75 1.75 0 0 1 10.25 3.75h3.5A1.75 1.75 0 0 1 15.5 5.5v2.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                  </svg>
+                </span>
+                导出账号库
+              </button>
+              <button class="hover-lift press-scale flex h-12 items-center gap-2 rounded-button border border-stroke bg-surface px-5 text-[14px] font-semibold text-ink shadow-sm" id="importBtn" type="button">
+                <span class="action-icon text-slate-600" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24">
+                    <path d="M12 4.75v9.5m0 0 3.5-3.5m-3.5 3.5-3.5-3.5M5.75 15.75v2.5a1 1 0 0 0 1 1h10.5a1 1 0 0 0 1-1v-2.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                  </svg>
+                </span>
+                导入账号库
+              </button>
+              <button class="hover-lift press-scale flex h-12 items-center gap-2 rounded-button border border-stroke bg-surface px-5 text-[14px] font-semibold text-ink shadow-sm" id="openLauncherBtn" type="button">
+                <span class="action-icon text-slate-600" aria-hidden="true">
+                  <svg fill="none" viewBox="0 0 24 24">
+                    <path d="M8 6.25v11.5l9-5.75z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                  </svg>
+                </span>
+                启动 Battle.net
+              </button>
+              <div class="ml-auto flex items-center gap-3 text-[14px]">
+                <button class="hover-lift press-scale flex h-12 items-center gap-2 rounded-button border border-stroke bg-surface px-5 text-[14px] font-semibold text-ink shadow-sm" id="noteBtn" type="button">
+                  <span class="action-icon text-slate-600" aria-hidden="true">
+                    <svg fill="none" viewBox="0 0 24 24">
+                      <path d="M5.75 18.25V6.75a1 1 0 0 1 1-1h7.5l4 4v8.5a1 1 0 0 1-1 1H6.75a1 1 0 0 1-1-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                      <path d="M14.25 5.75v4h4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                  </span>
+                  备注
+                </button>
+                <button class="hover-lift press-scale flex h-12 items-center gap-2 rounded-button border border-[rgba(239,68,68,0.22)] bg-[rgba(239,68,68,0.04)] px-5 text-[14px] font-semibold text-danger shadow-sm" id="deleteBtn" type="button">
+                  <span class="action-icon text-danger" aria-hidden="true">
+                    <svg fill="none" viewBox="0 0 24 24">
+                      <path d="M4.75 7.25h14.5M9.25 3.75h5.5M8 7.25l.5 10.25a1 1 0 0 0 1 .95h4.99a1 1 0 0 0 1-.95L16 7.25" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
+                  </span>
+                  删除
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="mt-5 overflow-hidden rounded-card border border-stroke bg-surface shadow-card">
+            <div class="grid grid-cols-[56px_1.2fr_1.1fr_1fr_44px] border-b border-stroke bg-surface-soft px-4 py-4 text-[13px] font-bold text-slate-500">
+              <div></div>
+              <div>账号名称</div>
+              <div>备注信息</div>
+              <div>最后同步时间</div>
+              <div></div>
+            </div>
+            <div class="divide-y divide-stroke" id="rows"></div>
+          </section>
+
+          <section class="mt-6 hidden rounded-card border border-stroke bg-surface px-5 py-4 shadow-card" id="settingsSection">
+            <div class="flex items-center justify-between">
+              <h2 class="text-[18px] font-bold text-ink">设置</h2>
+            </div>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div>
+                  <div class="text-[15px] font-semibold text-ink">开机自启</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">使用当前用户级自启方案。</div>
+                </div>
+                <input class="setting-toggle" id="launchAtLoginToggle" type="checkbox">
+              </label>
+              <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div>
+                  <div class="text-[15px] font-semibold text-ink">最小化启动</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">启动时直接驻留到托盘，不主动展开主窗口。</div>
+                </div>
+                <input class="setting-toggle" id="minimizeOnLaunchToggle" type="checkbox">
+              </label>
+              <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div>
+                  <div class="text-[15px] font-semibold text-ink">关闭到托盘</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">避免误关闭主程序，保持托盘常驻。</div>
+                </div>
+                <input class="setting-toggle" id="minimizeToTrayToggle" type="checkbox">
+              </label>
+              <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div>
+                  <div class="text-[15px] font-semibold text-ink">无需确认直接切换</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">点击切换后直接执行，不再弹出账号切换确认窗口。</div>
+                </div>
+                <input class="setting-toggle" id="skipSwitchConfirmToggle" type="checkbox">
+              </label>
+            </div>
+          </section>
+
+          <section class="mt-6 hidden rounded-card border border-stroke bg-surface px-5 py-4 shadow-card" id="debugSection">
+            <div class="flex items-center justify-between">
+              <h2 class="text-[14px] font-bold text-ink">运行状态</h2>
+              <button class="text-[13px] font-semibold text-primary" id="refreshStateBtn" type="button">刷新</button>
+            </div>
+            <div class="mt-4 grid gap-4 md:grid-cols-2">
+              <div class="rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div class="text-[13px] font-semibold text-ink">当前状态</div>
+                <div class="mt-3 space-y-2 text-[13px] text-ink-soft" id="debugState"></div>
+              </div>
+              <div class="rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div class="text-[13px] font-semibold text-ink">目录信息</div>
+                <div class="mt-3 space-y-2 text-[13px] text-ink-soft" id="debugDirs"></div>
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <div class="flex flex-wrap items-center gap-2 rounded-[10px] border border-stroke bg-surface px-3 py-2">
+                <span class="text-[12px] font-semibold text-ink-soft">切换方案</span>
+                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="N" id="switchProfileNBtn" type="button">N 方案</button>
+                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="D" id="switchProfileDBtn" type="button">D 方案（推荐）</button>
+                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="W" id="switchProfileWBtn" type="button" disabled title="W 方案暂不开放">W 方案</button>
+              </div>
+              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="openDataDirBtn" type="button">打开数据目录</button>
+              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="importNewBeeBoxBtn" type="button">导入 NewBeeBox</button>
+              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="restoreBackupBtn" type="button">恢复最近一次备份</button>
+              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="backupStateBtn" type="button">备份当前状态</button>
+              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="diagnosticSnapshotBtn" type="button">诊断快照</button>
+              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="compareDiagnosticsBtn" type="button">比较最近两次诊断</button>
+            </div>
+            <div class="mt-4 rounded-[12px] border border-stroke bg-surface-soft p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div class="text-[13px] font-semibold text-ink">日志</div>
+                <button class="rounded-[8px] border border-stroke bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors hover:border-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.04)] hover:text-danger" id="clearLogsBtn" type="button">清空日志</button>
+              </div>
+              <div class="mt-3 space-y-2 text-[13px] text-ink-soft" id="logLines"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <footer class="flex-none border-t border-stroke px-8 py-4">
+        <div class="flex flex-wrap items-center justify-between gap-4 text-[14px]">
+          <div class="text-slate-400">© 2026 YiboSoft. All rights reserved.</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="mr-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-400">GitHub</span>
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" data-tooltip="YiboBattleSwitch：Battle.net / 魔兽世界多账号本地切换工具" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">
+              <span class="plugin-chip__icon" aria-hidden="true">
+                <img alt="" src="../../logo.png">
+              </span>
+              <span>YiboBattleSwitch</span>
+            </a>
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBeastPaths" data-tooltip="YiboBeastPaths：潘达利亚隐身宠物巡逻路径" href="https://github.com/datouluobo/YiboBeastPaths" rel="noreferrer" target="_blank">
+              <span class="plugin-chip__icon" aria-hidden="true">
+                <img alt="" src="../../assets/plugins/yibobeastpaths.png">
+              </span>
+              <span>YiboBeastPaths</span>
+            </a>
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboQuestBlocker" data-tooltip="YiboQuestBlocker：自动放弃不需要的任务" href="https://github.com/datouluobo/YiboQuestBlocker" rel="noreferrer" target="_blank">
+              <span class="plugin-chip__icon" aria-hidden="true">
+                <img alt="" src="../../assets/plugins/yiboquestblocker.png">
+              </span>
+              <span>YiboQuestBlocker</span>
+            </a>
+          </div>
+          <div class="flex items-center gap-6">
+            <button class="text-ink hover:text-primary" id="settingsLink" type="button">设置</button>
+            <button class="text-ink hover:text-primary" id="debugLink" type="button">调试</button>
+            <button class="text-ink hover:text-primary" id="aboutLink" type="button">关于</button>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <dialog class="overflow-hidden rounded-[16px] border border-stroke p-0 shadow-shell" id="aboutDialog">
+    <div class="w-[680px] max-w-[calc(100vw-32px)] bg-surface p-6">
+      <div class="flex items-start justify-between">
+        <div class="flex items-start gap-3">
+          <img alt="YiboBattleSwitch Logo" class="mt-0.5 h-10 w-10 rounded-[10px] object-cover shadow-sm" src="../../logo.png">
+          <div>
+            <h2 class="text-[20px] font-bold text-ink">YiboBattleSwitch</h2>
+            <p class="mt-1 text-[14px] text-ink-soft">Battle.net / 魔兽世界多账号本地切换工具</p>
+          </div>
+        </div>
+        <button class="text-slate-400 hover:text-ink" id="closeAboutTop" type="button">X</button>
+      </div>
+      <div class="mt-5 rounded-[14px] border border-stroke bg-surface-soft p-4">
+        <div class="text-[13px] font-semibold text-ink">产品说明</div>
+        <p class="mt-2 text-[14px] leading-6 text-ink-soft">为需要频繁切换多个 Battle.net / WoW 账号的玩家提供稳定、直观的本地账号切换体验。</p>
+      </div>
+      <div class="mt-4 grid gap-3 text-[14px] text-ink-soft md:grid-cols-2">
+        <div class="rounded-[14px] border border-stroke bg-surface-soft p-4">
+          <div class="text-[13px] font-semibold text-ink">版本信息</div>
+          <div class="mt-2" id="aboutVersion"></div>
+          <div class="mt-1">发布方：YiboSoft</div>
+        </div>
+        <div class="rounded-[14px] border border-stroke bg-surface-soft p-4">
+          <div class="text-[13px] font-semibold text-ink">使用提示</div>
+          <div class="mt-2 leading-6">建议先确认安装目录，再执行保存、导入或账号切换操作。</div>
+        </div>
+      </div>
+      <div class="mt-4 space-y-3 text-[14px] text-ink-soft">
+        <div class="rounded-[14px] border border-stroke bg-surface-soft p-4 break-all" id="aboutLibraryDir"></div>
+        <div class="rounded-[14px] border border-stroke bg-surface-soft p-4 break-all" id="aboutDataDir"></div>
+        <div class="rounded-[14px] border border-stroke bg-surface-soft p-4">
+          <div class="text-[13px] font-semibold text-ink">项目地址</div>
+          <a class="mt-2 inline-flex text-[14px] text-primary hover:underline" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">GitHub: datouluobo/YiboBattleSwitch</a>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end">
+        <button class="hover-lift press-scale rounded-[10px] bg-primary px-4 py-2 text-[14px] font-semibold text-white shadow-[0_10px_22px_rgba(29,161,242,0.22)]" id="closeAboutBottom" type="button">关闭</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="rounded-[16px] border border-stroke p-0 shadow-shell" id="formDialog">
+    <form class="w-[460px] bg-surface p-6" id="formDialogForm" method="dialog">
+      <div class="flex items-center justify-between">
+        <h2 class="text-[18px] font-bold text-ink" id="formDialogTitle">操作</h2>
+        <button class="text-slate-400 hover:text-ink" id="formDialogClose" type="button">X</button>
+      </div>
+      <p class="mt-2 text-[14px] text-ink-soft" id="formDialogHint"></p>
+      <div class="mt-5 space-y-4" id="formDialogFields"></div>
+      <div class="mt-6 flex justify-end gap-3">
+        <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[14px] font-semibold text-ink shadow-sm" id="formDialogCancel" type="button">取消</button>
+        <button class="hover-lift press-scale rounded-[10px] bg-primary px-4 py-2 text-[14px] font-semibold text-white shadow-[0_10px_22px_rgba(29,161,242,0.22)]" id="formDialogSubmit" type="submit">确认</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="rounded-[16px] border border-stroke p-0 shadow-shell" id="confirmDialog">
+    <div class="w-[420px] bg-surface p-6">
+      <h2 class="text-[18px] font-bold text-ink" id="confirmDialogTitle">请确认</h2>
+      <p class="mt-3 max-h-[240px] overflow-y-auto break-all whitespace-pre-line text-[14px] text-ink-soft" id="confirmDialogMessage"></p>
+      <label class="mt-4 hidden items-center gap-3 rounded-[10px] border border-stroke bg-surface-soft px-3 py-2 text-[13px] font-medium text-ink" id="confirmDialogOptionWrap">
+        <input class="setting-toggle" id="confirmDialogOptionCheckbox" type="checkbox">
+        <span id="confirmDialogOptionLabel">以后直接切换，不再确认</span>
+      </label>
+      <div class="mt-6 flex justify-end gap-3">
+        <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[14px] font-semibold text-ink shadow-sm" id="confirmDialogCancel" type="button">取消</button>
+        <button class="hover-lift press-scale rounded-[10px] bg-primary px-4 py-2 text-[14px] font-semibold text-white shadow-[0_10px_22px_rgba(29,161,242,0.22)]" id="confirmDialogOk" type="button">确认</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="rounded-[16px] border border-stroke p-0 shadow-shell" id="messageDialog">
+    <div class="w-[440px] bg-surface p-6">
+      <div class="flex items-start gap-3">
+        <img alt="YiboBattleSwitch Logo" class="h-10 w-10 rounded-[10px] object-cover shadow-sm" src="../../logo.png">
+        <div class="min-w-0 flex-1">
+          <h2 class="text-[18px] font-bold text-ink" id="messageDialogTitle">提示</h2>
+          <p class="mt-3 whitespace-pre-line text-[14px] text-ink-soft" id="messageDialogBody"></p>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button class="hover-lift press-scale rounded-[10px] bg-primary px-4 py-2 text-[14px] font-semibold text-white shadow-[0_10px_22px_rgba(29,161,242,0.22)]" id="messageDialogOk" type="button">知道了</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="../../dist/renderer/main.js" type="module"></script>
+  <div class="plugin-tooltip hidden" id="pluginTooltip" role="tooltip"></div>
+</body>
+</html>

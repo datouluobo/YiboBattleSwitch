@@ -1,0 +1,319 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    height: 100%;
+    background: #f7f9fb;
+  }
+
+  body {
+    min-height: 100%;
+    margin: 0;
+    font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(29, 161, 242, 0.12), transparent 24%),
+      linear-gradient(180deg, #fbfcfe 0%, #f7f9fb 100%);
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+
+  dialog::backdrop {
+    background: rgba(15, 23, 42, 0.24);
+  }
+}
+
+@layer components {
+  .hover-lift {
+    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-1px);
+  }
+
+  .press-scale:active {
+    transform: scale(0.98);
+  }
+
+  .row-selected {
+    background: linear-gradient(90deg, rgba(29, 161, 242, 0.14) 0%, rgba(29, 161, 242, 0.08) 100%);
+    box-shadow: inset 0 0 0 1px rgba(29, 161, 242, 0.18);
+  }
+
+  .drag-row {
+    position: relative;
+    border-radius: 12px;
+    cursor: default;
+    user-select: none;
+  }
+
+  .drag-row-active {
+    z-index: 1;
+    transform: translateY(-2px) scale(0.994);
+    background: linear-gradient(180deg, rgba(29, 161, 242, 0.12), rgba(29, 161, 242, 0.06));
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  .drag-row-target::after {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(29, 161, 242, 0.92), rgba(29, 161, 242, 0.42));
+  }
+
+  .drag-row-target-before::after {
+    top: 0;
+  }
+
+  .drag-row-target-after::after {
+    bottom: 0;
+  }
+
+  .drag-handle {
+    color: #94a3b8;
+    transition: color 180ms ease, transform 180ms ease, background-color 180ms ease;
+  }
+
+  .drag-handle:hover {
+    color: #475467;
+    transform: scale(1.04);
+  }
+
+  .drag-handle-active {
+    color: #1d4ed8;
+    background: rgba(29, 161, 242, 0.08);
+  }
+
+  .drag-sort-active,
+  .drag-sort-active * {
+    cursor: grabbing !important;
+  }
+
+  .save-action-btn {
+    border: 1px solid rgba(29, 161, 242, 0.16);
+    background: linear-gradient(180deg, rgba(29, 161, 242, 0.1), rgba(29, 161, 242, 0.04));
+    color: #0f172a;
+    box-shadow: 0 4px 14px rgba(29, 161, 242, 0.12);
+  }
+
+  .save-action-btn:hover {
+    border-color: rgba(29, 161, 242, 0.28);
+    background: linear-gradient(180deg, rgba(29, 161, 242, 0.14), rgba(29, 161, 242, 0.06));
+    box-shadow: 0 8px 18px rgba(29, 161, 242, 0.16);
+  }
+
+  .plugin-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid #dce3ea;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #344054;
+    text-decoration: none;
+    transition: transform 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .plugin-chip:hover {
+    transform: translateY(-1px);
+    border-color: rgba(29, 161, 242, 0.24);
+    color: #0f172a;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  }
+
+  .plugin-chip__icon {
+    display: inline-flex;
+    width: 1.6rem;
+    height: 1.6rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 999px;
+    flex: 0 0 auto;
+  }
+
+  .plugin-chip__icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .plugin-tooltip {
+    position: fixed;
+    z-index: 60;
+    max-width: min(420px, calc(100vw - 40px));
+    padding: 0.75rem 0.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.98);
+    color: #0f172a;
+    font-size: 15px;
+    line-height: 1.55;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+  }
+
+  .app-titlebar {
+    -webkit-app-region: drag;
+  }
+
+  .window-controls,
+  .window-controls * {
+    -webkit-app-region: no-drag;
+  }
+
+  .window-control-btn {
+    position: relative;
+    width: 56px;
+    height: 40px;
+    border: 0;
+    background: transparent;
+    color: #475467;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .window-control-btn:hover {
+    background: rgba(15, 23, 42, 0.06);
+    color: #101828;
+  }
+
+  .window-control-btn-close:hover {
+    background: #e11d48;
+    color: #fff;
+  }
+
+  .window-control-icon,
+  .window-control-icon::before,
+  .window-control-icon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .window-control-icon {
+    width: 14px;
+    height: 1.75px;
+    background: currentColor;
+  }
+
+  .window-control-icon-max {
+    width: 13px;
+    height: 10px;
+    border: 1.75px solid currentColor;
+    background: transparent;
+  }
+
+  .window-control-icon-close {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+
+  .window-control-icon-close::before,
+  .window-control-icon-close::after {
+    width: 15px;
+    height: 1.75px;
+    background: currentColor;
+  }
+
+  .window-control-icon-close::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .window-control-icon-close::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hover-lift,
+    .drag-handle,
+    .plugin-chip,
+    .save-action-btn,
+    .window-control-btn {
+      transition: none;
+    }
+  }
+
+  .debug-hidden {
+    display: none;
+  }
+
+  .notice-success {
+    border-color: rgba(34, 197, 94, 0.24);
+    background: rgba(34, 197, 94, 0.1);
+    color: #166534;
+  }
+
+  .notice-error {
+    border-color: rgba(239, 68, 68, 0.24);
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
+  }
+
+  .notice-idle {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .mono {
+    font-family: "Cascadia Mono", "Consolas", monospace;
+  }
+
+  .icon-token {
+    display: inline-flex;
+    min-width: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: 0 0 auto;
+  }
+
+  .action-icon svg {
+    width: 1rem;
+    height: 1rem;
+    stroke: currentColor;
+  }
+
+  .setting-toggle {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: #1da1f2;
+    cursor: pointer;
+  }
+
+  .scheme-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+    background: rgba(148, 163, 184, 0.08);
+    color: #94a3b8;
+  }
+}

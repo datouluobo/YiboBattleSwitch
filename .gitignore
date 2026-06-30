@@ -17,3 +17,6 @@ prototype/battle_switch_library/ui_state.json
 prototype/battle_switch_library/accounts/
 
 *.log
+dist/
+node_modules/
+package-lock.json

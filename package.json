@@ -1,0 +1,69 @@
+{
+  "name": "yibo-battle-switch",
+  "version": "0.3.6",
+  "description": "Independent Electron Battle.net account switcher rebuild",
+  "main": "dist/main/main/bootstrap/app.js",
+  "author": "YiboSoft",
+  "license": "MIT",
+  "scripts": {
+    "prestart": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\prestart-cleanup.ps1 -Workspace \"E:\\Program\\YiboBattleSwitch\"",
+    "clean": "node -e \"const fs=require('node:fs'); fs.rmSync('dist',{recursive:true,force:true});\"",
+    "build": "npm run clean && npm run build:main && npm run build:preload && npm run build:renderer",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:preload": "tsc -p tsconfig.preload.json",
+    "build:renderer": "tsc -p tsconfig.renderer.json && tailwindcss -c tailwind.config.cjs -i ./app/renderer/styles/tailwind.css -o ./dist/renderer/styles.css --minify",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.preload.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron .",
+    "pack:win": "npm run build && powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\package-win.ps1 -DirOnly",
+    "dist:win": "npm run build && powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\package-win.ps1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "electron": "^37.1.0",
+    "electron-builder": "^24.13.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2"
+  },
+  "build": {
+    "appId": "com.yibosoft.yibobattleswitch",
+    "productName": "YiboBattleSwitch",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "app/renderer/index.html",
+      "logo.png",
+      "assets/icons/**/*",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "dist/main/main/bootstrap/app.js"
+    },
+    "electronDist": "node_modules/electron/dist",
+    "electronDownload": {
+      "mirror": "https://npmmirror.com/mirrors/electron/",
+      "customDir": "37.10.3"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icons/app-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    }
+  }
+}
