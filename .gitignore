@@ -18,5 +18,6 @@ prototype/battle_switch_library/accounts/
 
 *.log
 dist/
+release/
 node_modules/
 package-lock.json
