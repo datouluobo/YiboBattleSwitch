@@ -20,6 +20,7 @@ import { getAccountDisplayName } from "../../shared/account-display.js";
 import { AppStateDto } from "../../shared/types/app.js";
 import { selectDirectory, selectImportSource } from "../shell/dialogs.js";
 import { closeMainWindow, getMainWindow, getWindowState, minimizeMainWindow, toggleMainWindowMaximize } from "../window/main-window.js";
+import { refreshTrayMenu } from "../window/tray.js";
 import { detectBattleNetLauncherPath, detectDefaultGameDirectory, normalizeInstallDirectory } from "../../infra/battlenet/battlenet-paths.js";
 import { readBattleNetConfig } from "../../infra/battlenet/battlenet-config.js";
 import { detectBattleNetAccountLabel } from "../../infra/battlenet/battlenet-account-label.js";
@@ -226,6 +227,7 @@ export function registerIpc(): void {
   ipcMain.handle(IPC_CHANNELS.REORDER_ACCOUNTS, async (_event, payload: { accountIds: string[] }) => {
     const updated = await reorderAccounts(payload.accountIds || []);
     const orderedIds = updated.map((item) => item.id);
+    await refreshTrayMenu();
     await logger.info(`Accounts reordered: ${orderedIds.join(", ")}`);
     return { ok: true, message: "账号顺序已更新。", orderedIds };
   });
@@ -276,6 +278,7 @@ export function registerIpc(): void {
 
   ipcMain.handle(IPC_CHANNELS.SAVE_CURRENT_ACCOUNT, async (_event, payload: { battleTag: string; email: string; phone: string; description: string }) => {
     const result = await saveCurrentAccount(payload);
+    await refreshTrayMenu();
     await logger.info(result.message);
     return result;
   });
@@ -283,6 +286,7 @@ export function registerIpc(): void {
   ipcMain.handle(IPC_CHANNELS.DELETE_ACCOUNT, async (_event, payload: { id: string }) => {
     await deleteAccount(payload.id);
     const result = { ok: true, message: "账号已删除。" };
+    await refreshTrayMenu();
     await logger.info(result.message);
     return result;
   });
@@ -310,6 +314,7 @@ export function registerIpc(): void {
   ipcMain.handle(IPC_CHANNELS.IMPORT_LIBRARY, async (_event, payload: { path: string }) => {
     const summary = await importAccountLibrary(payload.path);
     const result = { ok: true, message: `账号库已导入。新增 ${summary.imported}，更新 ${summary.updated}` };
+    await refreshTrayMenu();
     await logger.info(result.message);
     return result;
   });
@@ -331,6 +336,7 @@ export function registerIpc(): void {
 
   ipcMain.handle(IPC_CHANNELS.IMPORT_FROM_NEWBEEBOX, async () => {
     const result = await importFromNewBeeBox();
+    await refreshTrayMenu();
     await logger.info(result.message);
     return result;
   });
@@ -374,6 +380,9 @@ export function registerIpc(): void {
     const result = record
       ? { ok: true, message: `已更新备注：${getAccountDisplayName(record)}` }
       : { ok: false, message: "未找到要更新的账号。" };
+    if (record) {
+      await refreshTrayMenu();
+    }
     await logger.info(result.message);
     return result;
   });

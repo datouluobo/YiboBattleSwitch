@@ -50,6 +50,13 @@ async function buildTrayMenu(): Promise<Menu> {
   ]);
 }
 
+export async function refreshTrayMenu(): Promise<void> {
+  if (!tray) {
+    return;
+  }
+  tray.setContextMenu(await buildTrayMenu());
+}
+
 export async function createTray(): Promise<Tray> {
   if (tray) {
     return tray;
@@ -58,9 +65,9 @@ export async function createTray(): Promise<Tray> {
   const iconPath = resolveAppPath("assets", "icons", "app-icon.ico");
   tray = new Tray(nativeImage.createFromPath(iconPath));
   tray.setToolTip("YiboBattleSwitch");
-  tray.setContextMenu(await buildTrayMenu());
+  await refreshTrayMenu();
   tray.on("right-click", async () => {
-    tray?.setContextMenu(await buildTrayMenu());
+    await refreshTrayMenu();
     tray?.popUpContextMenu();
   });
   tray.on("double-click", () => {
