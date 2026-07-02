@@ -13,6 +13,34 @@ interface ImportSummary {
   updated: number;
 }
 
+async function createZipFromDirectory(sourceDir: string, archivePath: string): Promise<void> {
+  const escapedSource = sourceDir.replace(/'/g, "''");
+  const escapedArchive = archivePath.replace(/'/g, "''");
+  await execPowerShell(
+    [
+      "Add-Type -AssemblyName System.IO.Compression.FileSystem",
+      `$source = '${escapedSource}'`,
+      `$archive = '${escapedArchive}'`,
+      "if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }",
+      "[System.IO.Compression.ZipFile]::CreateFromDirectory($source, $archive)"
+    ].join("; ")
+  );
+}
+
+async function extractZipToDirectory(sourcePath: string, targetDir: string): Promise<void> {
+  const escapedSource = sourcePath.replace(/'/g, "''");
+  const escapedTarget = targetDir.replace(/'/g, "''");
+  await execPowerShell(
+    [
+      "Add-Type -AssemblyName System.IO.Compression.FileSystem",
+      `$source = '${escapedSource}'`,
+      `$target = '${escapedTarget}'`,
+      "if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force }",
+      "[System.IO.Compression.ZipFile]::ExtractToDirectory($source, $target)"
+    ].join("; ")
+  );
+}
+
 async function loadCandidateFolders(root: string): Promise<string[]> {
   const candidateRoot = await fs.stat(path.join(root, "accounts")).then((stat) => stat.isDirectory() ? path.join(root, "accounts") : root).catch(() => root);
   const entries = await fs.readdir(candidateRoot, { withFileTypes: true }).catch(() => []);
@@ -107,9 +135,7 @@ export async function backupAccountLibrary(outputDir: string): Promise<string> {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const archivePath = path.join(outputDir, `YiboBattleSwitch-account-library-backup-${timestamp}.zip`);
   const libraryDir = getAppPaths().libraryDir;
-  const escapedLibrary = libraryDir.replace(/'/g, "''");
-  const escapedArchive = archivePath.replace(/'/g, "''");
-  await execPowerShell(`Compress-Archive -Path '${escapedLibrary}\\*' -DestinationPath '${escapedArchive}' -Force`);
+  await createZipFromDirectory(libraryDir, archivePath);
   return archivePath;
 }
 
@@ -120,10 +146,7 @@ export async function importAccountLibrary(sourcePath: string): Promise<ImportSu
   const stat = await fs.stat(sourcePath);
   if (stat.isFile() && sourcePath.toLowerCase().endsWith(".zip")) {
     tempRoot = path.join(os.tmpdir(), "YiboBattleSwitch", `import-${Date.now()}`);
-    await fs.mkdir(tempRoot, { recursive: true });
-    const escapedSource = sourcePath.replace(/'/g, "''");
-    const escapedTarget = tempRoot.replace(/'/g, "''");
-    await execPowerShell(`Expand-Archive -Path '${escapedSource}' -DestinationPath '${escapedTarget}' -Force`);
+    await extractZipToDirectory(sourcePath, tempRoot);
     workingRoot = tempRoot;
   }
 
