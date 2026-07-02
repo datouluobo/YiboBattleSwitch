@@ -6,8 +6,12 @@ interface OperationResult {
 
 interface AccountListItem {
   id: string;
+  battleTag: string;
   email: string;
   maskedEmail: string;
+  phone: string;
+  maskedPhone: string;
+  displayName: string;
   description: string;
   lastSaved: string;
   sortOrder?: number;
@@ -23,6 +27,10 @@ interface AppStateDto {
   currentSavedAccountName: string;
   currentSavedAccountCandidates: string[];
   currentGameAccount: string;
+  currentBattleTag?: string;
+  currentAccountId?: string;
+  currentLocalFileCount?: number;
+  currentBrowserCacheFileCount?: number;
   wowAccounts: string[];
   accountCount: number;
   importableCount: number;
@@ -35,7 +43,7 @@ interface AppSettings {
   gameDirectory: string;
   battleNetLauncherPath: string;
   wowDirectory: string;
-  battleNetSwitchProfile: "N" | "D" | "W";
+  battleNetSwitchProfile: "N" | "D" | "M" | "W";
   minimizeToTrayOnClose: boolean;
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
@@ -60,6 +68,10 @@ type FormField = {
   value?: string;
   placeholder?: string;
   type?: string;
+  suggestions?: Array<{
+    label: string;
+    value: string;
+  }>;
 };
 
 const state = {
@@ -78,8 +90,9 @@ const state = {
 };
 
 const SWITCH_PROFILE_LABELS: Record<AppSettings["battleNetSwitchProfile"], string> = {
-  N: "N 方案 / 备用重恢复",
-  D: "D 方案 / 主力轻切换",
+  N: "N 方案 / 实验关闭中",
+  D: "D 方案 / 正式方案",
+  M: "min 方案 / 实验关闭中",
   W: "W 方案 / 槽位切换"
 };
 
@@ -90,6 +103,24 @@ function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll("\"", "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function resolveRendererAssetUrl(relativePath: string): string {
+  return new URL(relativePath, import.meta.url).toString();
+}
+
+function getAccountDisplayName(account: Pick<AccountListItem, "id" | "battleTag" | "email" | "phone" | "displayName">): string {
+  return account.displayName || account.battleTag || account.email || account.phone || account.id;
+}
+
+function bindStaticAssetImages(): void {
+  document.querySelectorAll<HTMLImageElement>("[data-asset-src]").forEach((image) => {
+    const relativePath = image.dataset.assetSrc;
+    if (!relativePath) {
+      return;
+    }
+    image.src = resolveRendererAssetUrl(relativePath);
+  });
 }
 
 function closeDialog(dialog: HTMLDialogElement): void {
@@ -146,12 +177,21 @@ function askForm(config: { title: string; hint?: string; submitText?: string; fi
   const fieldsEl = document.getElementById("formDialogFields") as HTMLDivElement;
   fieldsEl.innerHTML = config.fields.map((field) => {
     const value = escapeHtml(field.value || "");
+    const suggestions = (field.suggestions || []).map((suggestion) => `
+      <button
+        class="rounded-full border border-stroke bg-surface px-3 py-1 text-[12px] text-ink-soft transition hover:border-brand/40 hover:text-brand"
+        type="button"
+        data-fill-field="${escapeHtml(field.name)}"
+        data-fill-value="${escapeHtml(suggestion.value)}"
+      >${escapeHtml(suggestion.label)}</button>
+    `).join("");
     return `
       <label class="block">
         <span class="mb-2 block text-[13px] font-semibold text-ink">${escapeHtml(field.label)}</span>
         ${field.type === "textarea"
           ? `<textarea class="min-h-[96px] w-full rounded-[10px] border border-stroke bg-surface px-3 py-2 text-[14px] text-ink outline-none" data-field="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder || "")}">${value}</textarea>`
           : `<input class="w-full rounded-[10px] border border-stroke bg-surface px-3 py-2 text-[14px] text-ink outline-none" data-field="${escapeHtml(field.name)}" type="${escapeHtml(field.type || "text")}" value="${value}" placeholder="${escapeHtml(field.placeholder || "")}">`}
+        ${suggestions ? `<div class="mt-2 flex flex-wrap gap-2">${suggestions}</div>` : ""}
       </label>
     `;
   }).join("");
@@ -256,7 +296,7 @@ function renderRows(accounts: AccountListItem[]): void {
   accounts.forEach((account) => {
     const row = document.createElement("div");
     row.className = [
-      "grid w-full grid-cols-[56px_1.2fr_1.1fr_1fr_44px] items-center px-4 py-6 text-left",
+      "grid w-full grid-cols-[56px_1.15fr_1fr_0.9fr_1fr_1fr_44px] items-center px-4 py-6 text-left",
       "drag-row transition-[transform,box-shadow,background-color] duration-180 ease-out hover:bg-surface-soft",
       account.id === state.dragAccountId ? "drag-row-active" : "",
       account.id === state.dragOverAccountId ? `drag-row-target ${state.dragOverPosition === "before" ? "drag-row-target-before" : "drag-row-target-after"}` : "",
@@ -266,6 +306,8 @@ function renderRows(accounts: AccountListItem[]): void {
     row.setAttribute("tabindex", "0");
     row.dataset.accountId = account.id;
     const isRevealed = state.revealedAccountIds.has(account.id);
+    const emailValue = isRevealed ? account.email : account.maskedEmail;
+    const phoneValue = isRevealed ? account.phone : account.maskedPhone;
     row.innerHTML = `
       <button class="drag-handle flex cursor-grab items-center justify-center rounded-[10px] active:cursor-grabbing ${state.dragAccountId === account.id ? "drag-handle-active" : ""}" data-drag-handle="true" type="button" aria-label="拖拽排序">
         <span class="action-icon" aria-hidden="true">
@@ -280,7 +322,7 @@ function renderRows(accounts: AccountListItem[]): void {
         </span>
       </button>
       <div class="flex items-center gap-2">
-        <div class="text-[15px] font-semibold ${account.id === state.selectedAccountId ? "text-primary" : "text-ink"}">${escapeHtml(isRevealed ? account.email : account.maskedEmail)}</div>
+        <div class="text-[15px] font-semibold ${account.id === state.selectedAccountId ? "text-primary" : "text-ink"}">${escapeHtml(account.battleTag || "-")}</div>
         <button class="text-slate-400 transition-colors hover:text-primary" data-toggle-visibility="true" type="button" aria-label="${isRevealed ? "隐藏完整账号" : "显示完整账号"}">
           <span class="action-icon" aria-hidden="true">
             ${isRevealed
@@ -289,6 +331,8 @@ function renderRows(accounts: AccountListItem[]): void {
           </span>
         </button>
       </div>
+      <div class="text-[14px] text-ink">${escapeHtml(emailValue || "-")}</div>
+      <div class="text-[14px] text-ink">${escapeHtml(phoneValue || "-")}</div>
       <div class="text-[15px] text-ink">${escapeHtml(account.description || "-")}</div>
       <div class="text-[14px] text-ink-soft">${escapeHtml(account.lastSaved)}</div>
       <div></div>
@@ -348,6 +392,10 @@ function renderDebug(payload: AppStateDto, settings: AppSettings | null): void {
   (document.getElementById("debugState") as HTMLDivElement).innerHTML = `
     <div>Battle.net 环境：${escapeHtml(payload.currentLoginName)}</div>
     <div>当前账号标识：${escapeHtml(payload.currentSavedAccountName || "-")}</div>
+    <div>当前 BattleTag：${escapeHtml(payload.currentBattleTag || "-")}</div>
+    <div>当前 AccountId：${escapeHtml(payload.currentAccountId || "-")}</div>
+    <div>当前抓取 localFiles：${String(payload.currentLocalFileCount ?? 0)}</div>
+    <div>当前抓取 BrowserCaches：${String(payload.currentBrowserCacheFileCount ?? 0)}</div>
     <div>Battle.net 登录候选：${escapeHtml(loginCandidates)}</div>
     <div>注册表摘要：${escapeHtml(payload.currentGameAccount)}</div>
     <div>附加信息：${escapeHtml(wowAccounts)}</div>
@@ -484,7 +532,7 @@ function bindStaticActions(): void {
     if (!state.settings?.skipSwitchConfirm) {
       const confirmResult = await askConfirm(
         "确认切换",
-        `确认切换到 ${target?.email || state.selectedAccountId} 吗？\n\n程序会先备份当前状态，再关闭 Battle.net / Agent，恢复目标账号并重新启动 Battle.net。`,
+        `确认切换到 ${target ? getAccountDisplayName(target) : state.selectedAccountId} 吗？\n\n程序会先备份当前状态，再关闭 Battle.net / Agent，恢复目标账号并重新启动 Battle.net。`,
         { label: "以后直接切换，不再确认" }
       );
       if (!confirmResult.confirmed) {
@@ -514,19 +562,44 @@ function bindStaticActions(): void {
   });
 
   (document.getElementById("saveBtn") as HTMLButtonElement).addEventListener("click", async () => {
+    clearNotice();
+    await refreshState();
     const loginCandidates = state.payload?.currentSavedAccountCandidates || [];
-    const accountHint = state.payload?.currentSavedAccountName || loginCandidates[0] || "";
-    const candidateHint = loginCandidates.length ? `当前检测到的 Battle.net 登录候选：${loginCandidates.join("、")}` : "";
+    const currentBattleTag = state.payload?.currentBattleTag || "";
+    const uniqueLoginCandidates = Array.from(new Set(loginCandidates.map((item) => item.trim()).filter(Boolean)));
+    const emailCandidates = uniqueLoginCandidates.filter((item) => item.includes("@"));
+    const phoneCandidates = uniqueLoginCandidates.filter((item) => /^\d{6,}$/.test(item.replace(/\s+/g, "")));
+    const emailHint = "";
+    const phoneHint = "";
+    const candidateMessages = [
+      uniqueLoginCandidates.length ? `Battle.net.config 历史候选：${uniqueLoginCandidates.join("、")}` : "",
+      state.payload?.currentBattleTag ? `当前 BattleTag：${state.payload.currentBattleTag}` : "",
+      state.payload?.currentAccountId ? `当前 AccountId：${state.payload.currentAccountId}` : ""
+    ].filter(Boolean);
     const result = await askForm({
       title: "保存当前登录",
-      hint: ["把当前 Battle.net 登录状态保存到本地账号库。默认预填当前识别到的账号标识，可手动改成邮箱或备注名。", candidateHint].filter(Boolean).join("\n"),
+      hint: ["把当前 Battle.net 登录状态保存到本地账号库。BattleTag 为主显示标识。邮箱和手机号如果没有强校验来源，这里只作为历史候选展示，不代表它们一定属于当前 BattleTag。", ...candidateMessages].filter(Boolean).join("\n"),
       submitText: "保存",
       fields: [
         {
-          name: "accountName",
-          label: "账号名称或邮箱",
-          value: accountHint,
-          placeholder: accountHint ? "" : (loginCandidates[0] || "例如：name@example.com")
+          name: "battleTag",
+          label: "BattleTag",
+          value: currentBattleTag,
+          placeholder: currentBattleTag ? "" : "例如：天堂暴雨#51398"
+        },
+        {
+          name: "email",
+          label: "邮箱",
+          value: emailHint,
+          placeholder: "例如：name@example.com",
+          suggestions: emailCandidates.map((value) => ({ label: `填入历史候选：${value}`, value }))
+        },
+        {
+          name: "phone",
+          label: "手机号",
+          value: phoneHint,
+          placeholder: "例如：13800138000",
+          suggestions: phoneCandidates.map((value) => ({ label: `填入历史候选：${value}`, value }))
         },
         { name: "description", label: "备注", type: "textarea" }
       ]
@@ -535,7 +608,9 @@ function bindStaticActions(): void {
       return;
     }
     const actionResult = await runAction(() => window.api.saveCurrentAccount({
-      accountName: result.accountName || "",
+      battleTag: result.battleTag || "",
+      email: result.email || "",
+      phone: result.phone || "",
       description: result.description || ""
     }), "保存失败");
     if (actionResult) {
@@ -576,7 +651,7 @@ function bindStaticActions(): void {
     const current = state.payload.accounts.find((item) => item.id === state.selectedAccountId);
     const result = await askForm({
       title: "修改备注",
-      hint: `当前账号：${current?.email || state.selectedAccountId}`,
+      hint: `当前账号：${current ? getAccountDisplayName(current) : state.selectedAccountId}`,
       submitText: "保存",
       fields: [
         { name: "description", label: "备注", type: "textarea", value: current?.description === "-" ? "" : (current?.description || "") }
@@ -597,7 +672,7 @@ function bindStaticActions(): void {
       return;
     }
     const target = state.payload.accounts.find((item) => item.id === state.selectedAccountId);
-    const ok = await askConfirm("确认删除", `确认删除账号 ${target?.email || state.selectedAccountId} 吗？\n\n这个操作会删除本地账号目录。`);
+    const ok = await askConfirm("确认删除", `确认删除账号 ${target ? getAccountDisplayName(target) : state.selectedAccountId} 吗？\n\n这个操作会删除本地账号目录。`);
     if (!ok.confirmed) {
       return;
     }
@@ -884,6 +959,26 @@ function bindStaticActions(): void {
     state.formResolve = null;
     closeDialog(formDialog);
   });
+  formEl.addEventListener("click", (event) => {
+    const target = (event.target as HTMLElement | null)?.closest("[data-fill-field]") as HTMLButtonElement | null;
+    if (!target) {
+      return;
+    }
+    const fieldName = target.dataset.fillField || "";
+    const fieldValue = target.dataset.fillValue || "";
+    if (!fieldName) {
+      return;
+    }
+    const element = formEl.querySelector(`[data-field="${fieldName}"]`) as HTMLInputElement | HTMLTextAreaElement | null;
+    if (!element) {
+      return;
+    }
+    element.value = fieldValue;
+    element.focus();
+    if ("setSelectionRange" in element) {
+      element.setSelectionRange(element.value.length, element.value.length);
+    }
+  });
 
   const confirmDialog = document.getElementById("confirmDialog") as HTMLDialogElement;
   (document.getElementById("confirmDialogCancel") as HTMLButtonElement).addEventListener("click", () => {
@@ -914,6 +1009,7 @@ function bindStaticActions(): void {
 
 async function bootstrap(): Promise<void> {
   bindStaticActions();
+  bindStaticAssetImages();
   clearNotice();
   await refreshState();
 }

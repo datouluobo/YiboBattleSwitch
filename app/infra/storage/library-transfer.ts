@@ -19,19 +19,23 @@ async function loadCandidateFolders(root: string): Promise<string[]> {
   return entries.filter((entry) => entry.isDirectory()).map((entry) => path.join(candidateRoot, entry.name));
 }
 
-async function readExternalAccount(folderPath: string): Promise<{ email: string; description: string; snapshot: BattleNetSnapshot; importedFrom: string } | null> {
+async function readExternalAccount(folderPath: string): Promise<{ battleTag: string; email: string; phone: string; description: string; snapshot: BattleNetSnapshot; importedFrom: string } | null> {
   const meta = await readJsonFile<Record<string, unknown> | null>(path.join(folderPath, "meta.json"), null);
   const info = await readJsonFile<Record<string, unknown> | null>(path.join(folderPath, "info.json"), null);
   const snapshot = await readJsonFile<BattleNetSnapshot | null>(path.join(folderPath, "snapshot.json"), null);
 
-  const email = String(meta?.email || info?.account || "");
-  if (!email) {
+  const battleTag = String(meta?.battleTag || info?.battleTag || "");
+  const email = String(meta?.email || info?.email || info?.account || "");
+  const phone = String(meta?.phone || info?.phone || "");
+  if (!battleTag && !email && !phone) {
     return null;
   }
 
   if (snapshot) {
     return {
+      battleTag,
       email,
+      phone,
       description: String(meta?.description || info?.description || ""),
       snapshot,
       importedFrom: String(meta?.importedFrom || info?.importedFrom || "ExternalLibrary")
@@ -41,7 +45,9 @@ async function readExternalAccount(folderPath: string): Promise<{ email: string;
   const compatSnapshot = await readJsonFile<Record<string, unknown> | null>(path.join(folderPath, "account_snapshot.json"), null);
   if (compatSnapshot) {
     return {
+      battleTag: battleTag || String(compatSnapshot.battleTag || ""),
       email,
+      phone,
       description: String(meta?.description || info?.description || ""),
       snapshot: {
         capturedAt: String(compatSnapshot.savedAt || new Date().toISOString()),
@@ -50,6 +56,8 @@ async function readExternalAccount(folderPath: string): Promise<{ email: string;
         configJson: compatSnapshot.battleNetConfigJson ?? null,
         fileBlobs: (compatSnapshot.battleNetFileBlobs as Record<string, string>) || {},
         gameAccount: String((compatSnapshot.wow as Record<string, { value?: string }> | undefined)?.GAME_ACCOUNT?.value || ""),
+        battleTag: String(compatSnapshot.battleTag || ""),
+        accountId: String(compatSnapshot.accountId || ""),
         savedAccountNames: [],
         registry: {
           wow: (compatSnapshot.wow as BattleNetSnapshot["registry"]["wow"]) || {},
@@ -72,7 +80,9 @@ async function readExternalAccount(folderPath: string): Promise<{ email: string;
   }
 
   return {
+    battleTag,
     email,
+    phone,
     description: String(meta?.description || info?.description || ""),
     snapshot: {
       capturedAt: String(info?.importedAt || new Date().toISOString()),
@@ -81,6 +91,8 @@ async function readExternalAccount(folderPath: string): Promise<{ email: string;
       configJson,
       fileBlobs: {},
       gameAccount: "",
+      battleTag: battleTag || "",
+      accountId: "",
       savedAccountNames: [],
       registry: convertLegacyUnifiedAuth(compatRegistry),
       registryExports: [],
@@ -124,7 +136,7 @@ export async function importAccountLibrary(sourcePath: string): Promise<ImportSu
       continue;
     }
 
-    const existing = await readAccount(toAccountId(account.email));
+    const existing = await readAccount(toAccountId(account.battleTag || account.email || account.phone));
     await saveAccount(account);
     if (existing) {
       updated += 1;

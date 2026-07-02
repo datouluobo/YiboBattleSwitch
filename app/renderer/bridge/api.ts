@@ -12,7 +12,7 @@ export interface RendererAppSettings {
   gameDirectory: string;
   battleNetLauncherPath: string;
   wowDirectory: string;
-  battleNetSwitchProfile: "N" | "D" | "W";
+  battleNetSwitchProfile: "N" | "D" | "M" | "W";
   minimizeToTrayOnClose: boolean;
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
@@ -30,7 +30,7 @@ export interface DesktopApi {
   listAccounts: () => Promise<unknown>;
   switchAccount: (accountId: string) => Promise<RendererOperationResult>;
   reorderAccounts: (accountIds: string[]) => Promise<RendererOperationResult & { orderedIds: string[] }>;
-  saveCurrentAccount: (payload: { accountName: string; description: string }) => Promise<RendererOperationResult>;
+  saveCurrentAccount: (payload: { battleTag: string; email: string; phone: string; description: string }) => Promise<RendererOperationResult>;
   updateAccountNote: (id: string, description: string) => Promise<RendererOperationResult>;
   deleteAccount: (id: string) => Promise<RendererOperationResult>;
   backupLibrary: (targetPath: string) => Promise<RendererOperationResult>;

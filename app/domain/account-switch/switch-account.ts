@@ -1,10 +1,12 @@
 import { createBackup } from "../backup/create-backup.js";
+import { formatBattleNetAuthMaterialSummary } from "../../infra/battlenet/battlenet-auth-materials.js";
 import { readAccount, readAccountSnapshot } from "../../infra/storage/account-library.js";
 import { launchBattleNet } from "../../infra/battlenet/battlenet-launcher.js";
 import { stopForSwitch } from "../../infra/battlenet/battlenet-process.js";
 import { restoreBattleNetSnapshotWithProfile } from "../../infra/battlenet/battlenet-restore.js";
 import { logger } from "../../infra/system/logger.js";
 import { restoreLatestBackup } from "../backup/restore-latest-backup.js";
+import { getAccountDisplayName } from "../../shared/account-display.js";
 import { SwitchAccountResult } from "../../shared/types/app.js";
 import { getSettings } from "../../infra/storage/app-config.js";
 
@@ -25,8 +27,9 @@ export async function switchAccount(accountId: string): Promise<SwitchAccountRes
 
   const hasConfig = Boolean(snapshot.configRaw);
   const hasAuthMaterial = Boolean(snapshot.registry.wow.WEB_TOKEN?.value || Object.keys(snapshot.registry.unifiedAuth).length);
+  const displayName = getAccountDisplayName(account);
   await logger.info(
-    `[switch] profile=${settings.battleNetSwitchProfile} target=${account?.email || accountId} config=${hasConfig} auth=${hasAuthMaterial} roaming=${Object.keys(snapshot.fileBlobs || {}).length} local=${Object.keys(snapshot.localFiles || {}).length}`
+    `[switch] profile=${settings.battleNetSwitchProfile} target=${displayName || accountId} config=${hasConfig} auth=${hasAuthMaterial} roaming=${Object.keys(snapshot.fileBlobs || {}).length} local=${Object.keys(snapshot.localFiles || {}).length} authSummary=${formatBattleNetAuthMaterialSummary(snapshot)}`
   );
   const requireAuthMaterial = settings.battleNetSwitchProfile === "N";
   if (!hasConfig || (requireAuthMaterial && !hasAuthMaterial)) {
@@ -53,15 +56,15 @@ export async function switchAccount(accountId: string): Promise<SwitchAccountRes
   }
 
   try {
-    await restoreBattleNetSnapshotWithProfile(snapshot, `account:${account.email}`, settings.battleNetSwitchProfile);
+    await restoreBattleNetSnapshotWithProfile(snapshot, `account:${displayName}`, settings.battleNetSwitchProfile);
     await wait(350);
     await launchBattleNet();
     return {
       ok: true,
-      message: `已按 ${settings.battleNetSwitchProfile} 方案切换到账号：${account.email}`
+      message: `已按 ${settings.battleNetSwitchProfile} 方案切换到账号：${displayName}`
     };
   } catch (error) {
-    await logger.error(`[switch] failed target=${account.email} error=${error instanceof Error ? error.stack || error.message : String(error)}`);
+    await logger.error(`[switch] failed target=${displayName} error=${error instanceof Error ? error.stack || error.message : String(error)}`);
     await restoreLatestBackup();
     return {
       ok: false,

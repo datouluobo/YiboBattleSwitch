@@ -3,6 +3,7 @@ import { BattleNetSnapshot } from "../../shared/types/app.js";
 import { nowIso } from "../system/time.js";
 import { exportBattleNetRegistry, getTempRegistryExportDir, readBattleNetRegistrySnapshot } from "./battlenet-registry.js";
 import { readBattleNetConfig } from "./battlenet-config.js";
+import { readCurrentBattleNetIdentity } from "./battlenet-current-identity.js";
 import { readBattleNetLocalState } from "./battlenet-local-state.js";
 import { readBattleNetRoamingState } from "./battlenet-roaming-state.js";
 
@@ -31,15 +32,16 @@ function extractSavedAccountNames(configJson: unknown): string[] {
 }
 
 export async function takeBattleNetSnapshot(tag = "snapshot"): Promise<BattleNetSnapshot> {
-  const [config, registry, fileBlobs, localFiles] = await Promise.all([
+  const [config, registry, fileBlobs, currentIdentity] = await Promise.all([
     readBattleNetConfig(),
     readBattleNetRegistrySnapshot(),
     readBattleNetRoamingState(),
-    readBattleNetLocalState()
+    readCurrentBattleNetIdentity()
   ]);
   const registryDir = path.join(getTempRegistryExportDir(), `${tag}-${Date.now()}`);
   const registryExports = await exportBattleNetRegistry(registryDir);
   const savedAccountNames = extractSavedAccountNames(config.json);
+  const stableLocalFiles = await readBattleNetLocalState(currentIdentity?.accountId || "");
 
   return {
     capturedAt: nowIso(),
@@ -48,9 +50,11 @@ export async function takeBattleNetSnapshot(tag = "snapshot"): Promise<BattleNet
     configJson: config.json,
     fileBlobs,
     gameAccount: registry.wow.GAME_ACCOUNT?.value || "",
+    battleTag: currentIdentity?.battleTag || "",
+    accountId: currentIdentity?.accountId || "",
     savedAccountNames,
     registry,
     registryExports,
-    localFiles
+    localFiles: stableLocalFiles
   };
 }

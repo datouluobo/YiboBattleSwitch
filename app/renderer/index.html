@@ -17,7 +17,7 @@
             <div>
               <div class="flex items-center gap-3">
                 <span class="text-[17px] font-bold text-primary" id="wordmark">YiboBattleSwitch</span>
-                <span class="text-[13px] text-slate-400" id="versionLabel">v0.3.6</span>
+                <span class="text-[13px] text-slate-400" id="versionLabel">v0.4.0</span>
                 <span class="text-[13px] text-slate-300">/</span>
                 <span class="text-[18px] font-semibold text-ink" id="appTitleInline">暴雪战网 Battle.net 切换工具</span>
               </div>
@@ -131,9 +131,11 @@
           </section>
 
           <section class="mt-5 overflow-hidden rounded-card border border-stroke bg-surface shadow-card">
-            <div class="grid grid-cols-[56px_1.2fr_1.1fr_1fr_44px] border-b border-stroke bg-surface-soft px-4 py-4 text-[13px] font-bold text-slate-500">
+            <div class="grid grid-cols-[56px_1.15fr_1fr_0.9fr_1fr_1fr_44px] border-b border-stroke bg-surface-soft px-4 py-4 text-[13px] font-bold text-slate-500">
               <div></div>
-              <div>账号名称</div>
+              <div>BattleTag</div>
+              <div>邮箱</div>
+              <div>手机号</div>
               <div>备注信息</div>
               <div>最后同步时间</div>
               <div></div>
@@ -195,8 +197,9 @@
             <div class="mt-4 flex flex-wrap items-center gap-3">
               <div class="flex flex-wrap items-center gap-2 rounded-[10px] border border-stroke bg-surface px-3 py-2">
                 <span class="text-[12px] font-semibold text-ink-soft">切换方案</span>
-                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="N" id="switchProfileNBtn" type="button">N 方案</button>
-                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="D" id="switchProfileDBtn" type="button">D 方案（推荐）</button>
+                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="N" id="switchProfileNBtn" type="button" disabled title="N 方案当前仅内部实验使用，不对普通用户开放">N 方案（实验关闭）</button>
+                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="D" id="switchProfileDBtn" type="button">D 方案（正式）</button>
+                <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="M" id="switchProfileMBtn" type="button" disabled title="min 方案当前仅内部实验使用，不对普通用户开放">min 方案（实验关闭）</button>
                 <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="W" id="switchProfileWBtn" type="button" disabled title="W 方案暂不开放">W 方案</button>
               </div>
               <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="openDataDirBtn" type="button">打开数据目录</button>
@@ -224,19 +227,19 @@
             <span class="mr-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-400">GitHub</span>
             <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" data-tooltip="YiboBattleSwitch：Battle.net / 魔兽世界多账号本地切换工具" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">
               <span class="plugin-chip__icon" aria-hidden="true">
-                <img alt="" src="../../logo.png">
+                <img alt="" data-asset-src="../../logo.png">
               </span>
               <span>YiboBattleSwitch</span>
             </a>
             <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBeastPaths" data-tooltip="YiboBeastPaths：潘达利亚隐身宠物巡逻路径" href="https://github.com/datouluobo/YiboBeastPaths" rel="noreferrer" target="_blank">
               <span class="plugin-chip__icon" aria-hidden="true">
-                <img alt="" src="../../assets/plugins/yibobeastpaths.png">
+                <img alt="" data-asset-src="../../assets/plugins/yibobeastpaths.png">
               </span>
               <span>YiboBeastPaths</span>
             </a>
             <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboQuestBlocker" data-tooltip="YiboQuestBlocker：自动放弃不需要的任务" href="https://github.com/datouluobo/YiboQuestBlocker" rel="noreferrer" target="_blank">
               <span class="plugin-chip__icon" aria-hidden="true">
-                <img alt="" src="../../assets/plugins/yiboquestblocker.png">
+                <img alt="" data-asset-src="../../assets/plugins/yiboquestblocker.png">
               </span>
               <span>YiboQuestBlocker</span>
             </a>

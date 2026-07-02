@@ -1,7 +1,11 @@
 export interface AccountListItem {
   id: string;
+  battleTag: string;
   email: string;
   maskedEmail: string;
+  phone: string;
+  maskedPhone: string;
+  displayName: string;
   description: string;
   lastSaved: string;
   importedFrom?: string;
@@ -10,7 +14,9 @@ export interface AccountListItem {
 
 export interface AccountRecord {
   id: string;
+  battleTag: string;
   email: string;
+  phone: string;
   description: string;
   createdAt: string;
   updatedAt: string;
@@ -30,7 +36,7 @@ export interface AccountCompatibilityRecord {
   wowAccountsByVariant: Record<string, string[]>;
 }
 
-export type BattleNetSwitchProfile = "N" | "D" | "W";
+export type BattleNetSwitchProfile = "N" | "D" | "M" | "W";
 
 export interface AppSettings {
   gameDirectory: string;
@@ -59,6 +65,10 @@ export interface AppStateDto {
   currentSavedAccountName: string;
   currentSavedAccountCandidates: string[];
   currentGameAccount: string;
+  currentBattleTag?: string;
+  currentAccountId?: string;
+  currentLocalFileCount?: number;
+  currentBrowserCacheFileCount?: number;
   wowAccounts: string[];
   accountCount: number;
   importableCount: number;
@@ -78,6 +88,8 @@ export interface BattleNetSnapshot {
   configJson: unknown | null;
   fileBlobs: Record<string, string>;
   gameAccount: string;
+  battleTag?: string;
+  accountId?: string;
   savedAccountNames: string[];
   registry: BattleNetRegistrySnapshot;
   registryExports: RegistryExport[];

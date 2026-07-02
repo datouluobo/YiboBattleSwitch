@@ -27,7 +27,7 @@ let cachedSettings: AppSettings = { ...DEFAULT_SETTINGS };
 export async function getSettings(): Promise<AppSettings> {
   const paths = getAppPaths();
   const stored = await readJsonFile<Partial<AppSettings>>(paths.settingsFile, DEFAULT_SETTINGS);
-  const normalizedSwitchProfile = stored.battleNetSwitchProfile === "N" || stored.battleNetSwitchProfile === "D"
+  const normalizedSwitchProfile = stored.battleNetSwitchProfile === "N" || stored.battleNetSwitchProfile === "D" || stored.battleNetSwitchProfile === "M"
     ? stored.battleNetSwitchProfile
     : DEFAULT_SETTINGS.battleNetSwitchProfile;
   cachedSettings = {

@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { app } from "electron";
 import { ensureDir } from "../system/fs.js";
+import { logger } from "../system/logger.js";
 
 const LOCAL_BATTLE_NET_ROOT_FILES = [
   "CachedData.db",
@@ -9,14 +10,49 @@ const LOCAL_BATTLE_NET_ROOT_FILES = [
 ];
 
 const LOCAL_BATTLE_NET_MANAGED_DIRS = [
-  "Account"
+  "Account",
+  "BrowserCaches"
 ];
+
+const BROWSER_CACHE_COMMON_DIRS = [
+  "Network",
+  "Session Storage",
+  "Local Storage"
+];
+
+const BROWSER_CACHE_ACCOUNT_DIRS = [
+  "Network",
+  "Session Storage",
+  "Local Storage",
+  "Storage",
+  "WebStorage",
+  "Service Worker"
+];
+
+const VOLATILE_BROWSER_CACHE_FILE_NAMES = new Set([
+  "LOCK",
+  "CURRENT",
+  "LOG",
+  "LOG.old",
+  "Cookies-journal"
+]);
 
 function getLocalBattleNetRoot(): string {
   return path.join(process.env.LOCALAPPDATA || app.getPath("appData"), "Battle.net");
 }
 
-async function listManagedFiles(): Promise<string[]> {
+async function listFilesUnder(rootPath: string): Promise<string[]> {
+  const files: string[] = [];
+  const entries = await fs.readdir(rootPath, { recursive: true, withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isFile() && !VOLATILE_BROWSER_CACHE_FILE_NAMES.has(entry.name)) {
+      files.push(path.join(entry.parentPath, entry.name));
+    }
+  }
+  return files;
+}
+
+async function listManagedFiles(currentAccountId = ""): Promise<string[]> {
   const root = getLocalBattleNetRoot();
   const files: string[] = [];
 
@@ -32,30 +68,56 @@ async function listManagedFiles(): Promise<string[]> {
     }
   }
 
-  for (const dirName of LOCAL_BATTLE_NET_MANAGED_DIRS) {
-    const dirPath = path.join(root, dirName);
+  const accountDirPath = path.join(root, "Account");
+  try {
+    files.push(...await listFilesUnder(accountDirPath));
+  } catch {
+    // Ignore missing dirs.
+  }
+
+  const browserCacheRoot = path.join(root, "BrowserCaches");
+  const browserCacheFiles = [
+    path.join(browserCacheRoot, "LocalPrefs.json"),
+    ...BROWSER_CACHE_COMMON_DIRS.map((dirName) => path.join(browserCacheRoot, "common", dirName)),
+    ...(currentAccountId.trim()
+      ? BROWSER_CACHE_ACCOUNT_DIRS.map((dirName) => path.join(browserCacheRoot, currentAccountId.trim(), dirName))
+      : [])
+  ];
+
+  for (const targetPath of browserCacheFiles) {
     try {
-      const entries = await fs.readdir(dirPath, { recursive: true, withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.isFile()) {
-          files.push(path.join(entry.parentPath, entry.name));
-        }
+      const stat = await fs.stat(targetPath);
+      if (stat.isFile()) {
+        files.push(targetPath);
+        continue;
+      }
+      if (stat.isDirectory()) {
+        files.push(...await listFilesUnder(targetPath));
       }
     } catch {
-      // Ignore missing dirs.
+      // Ignore missing browser cache paths.
     }
   }
 
-  return files.sort();
+  return Array.from(new Set(files)).sort();
 }
 
-export async function readBattleNetLocalState(): Promise<Record<string, string>> {
+export async function readBattleNetLocalState(currentAccountId = ""): Promise<Record<string, string>> {
   const root = getLocalBattleNetRoot();
   const blobs: Record<string, string> = {};
 
-  for (const fullPath of await listManagedFiles()) {
+  for (const fullPath of await listManagedFiles(currentAccountId)) {
     const relPath = path.relative(root, fullPath);
-    blobs[relPath] = (await fs.readFile(fullPath)).toString("base64");
+    try {
+      blobs[relPath] = (await fs.readFile(fullPath)).toString("base64");
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? String((error as { code?: string }).code || "") : "";
+      if (code === "EBUSY" || code === "EPERM" || code === "EACCES") {
+        await logger.warn(`[snapshot] skip busy local file: ${relPath} (${code})`);
+        continue;
+      }
+      throw error;
+    }
   }
 
   return blobs;

@@ -6,6 +6,7 @@ import { BattleNetSnapshot } from "../../shared/types/app.js";
 
 export interface BattleNetConfigFields {
   savedAccountName: string;
+  lastLoginAccount: string;
   lastLoginRegion: string;
   lastLoginAddress: string;
   lastLoginTassadar: string;
@@ -64,6 +65,7 @@ function parseSavedAccountNames(value: unknown): string[] {
 function extractFieldsFromJson(configJson: unknown): BattleNetConfigFields {
   const result: BattleNetConfigFields = {
     savedAccountName: "",
+    lastLoginAccount: "",
     lastLoginRegion: "",
     lastLoginAddress: "",
     lastLoginTassadar: ""
@@ -76,6 +78,7 @@ function extractFieldsFromJson(configJson: unknown): BattleNetConfigFields {
   const client = isRecord(configJson.Client) ? configJson.Client : null;
   if (client) {
     result.savedAccountName = parseSavedAccountNames(client.SavedAccountNames)[0] || "";
+    result.lastLoginAccount = readString(client.LastLoginAccount);
   }
 
   for (const value of Object.values(configJson)) {
@@ -125,6 +128,9 @@ export async function patchBattleNetConfig(fields: Partial<BattleNetConfigFields
   const client = base.Client as Record<string, unknown>;
   if (typeof fields.savedAccountName === "string" && fields.savedAccountName.trim()) {
     client.SavedAccountNames = fields.savedAccountName.trim();
+  }
+  if (typeof fields.lastLoginAccount === "string" && fields.lastLoginAccount.trim()) {
+    client.LastLoginAccount = fields.lastLoginAccount.trim();
   }
 
   for (const value of Object.values(base)) {

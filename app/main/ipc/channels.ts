@@ -1,5 +1,5 @@
 export type IpcActionPayload =
-  | { accountName: string; description: string }
+  | { battleTag: string; email: string; phone: string; description: string }
   | { accountId: string }
   | { id: string }
   | { path: string }

@@ -1,5 +1,5 @@
 export const APP_NAME = "YiboBattleSwitch";
-export const APP_VERSION = "0.3.6";
+export const APP_VERSION = "0.4.0";
 
 export const IPC_CHANNELS = {
   GET_APP_STATE: "app:get-state",

@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { AccountCompatibilityRecord, AccountListItem, AccountRecord, BattleNetSnapshot } from "../../shared/types/app.js";
+import { getAccountDisplayName } from "../../shared/account-display.js";
 import { convertLegacyUnifiedAuth } from "../battlenet/battlenet-registry.js";
 import { ensureDir, fileExists, readJsonFile, writeJsonFile } from "../system/fs.js";
 import { formatDisplayDate, nowIso } from "../system/time.js";
@@ -11,6 +12,144 @@ const SNAPSHOT_FILE = "snapshot.json";
 
 export function toAccountId(value: string): string {
   return value.replace(/[<>:"/\\|?*\x00-\x1f]/g, "-").replace(/\s+/g, "-").toLowerCase();
+}
+
+function normalizeComparable(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function pickPrimaryIdentifier(input: { accountId?: string; battleTag?: string; email?: string; phone?: string }): string {
+  return input.accountId || input.battleTag || input.email || input.phone || `account-${Date.now()}`;
+}
+
+function matchesComparable(left: string, right: string): boolean {
+  return Boolean(left && right && normalizeComparable(left) === normalizeComparable(right));
+}
+
+function scoreExistingRecordMatch(
+  account: AccountRecord,
+  input: { battleTag: string; email: string; phone: string; snapshot: BattleNetSnapshot }
+): number {
+  const expectedBattleTag = input.battleTag || input.snapshot.battleTag || "";
+  let score = 0;
+
+  if (matchesComparable(account.battleTag, expectedBattleTag)) {
+    score += 10;
+  }
+  if (matchesComparable(account.phone, input.phone)) {
+    score += 8;
+  }
+  if (matchesComparable(account.email, input.email)) {
+    score += 6;
+  }
+
+  // 兼容旧数据：早期版本可能把 BattleTag 错存到 email 字段里。
+  if (matchesComparable(account.email, expectedBattleTag)) {
+    score += 4;
+  }
+
+  if (account.battleTag) {
+    score += 2;
+  }
+  if (account.phone) {
+    score += 1;
+  }
+
+  return score;
+}
+
+async function resolveAccountIdForSave(
+  input: { battleTag: string; email: string; phone: string; snapshot: BattleNetSnapshot },
+  options?: { preferExisting?: boolean }
+): Promise<{ id: string; existing: AccountRecord | null }> {
+  const preferExisting = Boolean(options?.preferExisting);
+  const baseId = toAccountId(pickPrimaryIdentifier({
+    accountId: input.snapshot.accountId,
+    battleTag: input.battleTag,
+    email: input.email,
+    phone: input.phone
+  }));
+  const accounts = await listAccounts();
+  const currentAccountId = input.snapshot.accountId?.trim() || "";
+  const currentBattleTag = input.battleTag.trim() || input.snapshot.battleTag?.trim() || "";
+  const currentEmail = input.email.trim();
+  const currentPhone = input.phone.trim();
+
+  if (preferExisting) {
+    const exactAccountIdMatches: AccountRecord[] = [];
+    if (currentAccountId) {
+      for (const account of accounts) {
+        const existingSnapshot = await readAccountSnapshot(account.id);
+        if (!existingSnapshot?.accountId || existingSnapshot.accountId.trim() !== currentAccountId) {
+          continue;
+        }
+        const existing = await readAccount(account.id);
+        if (existing) {
+          exactAccountIdMatches.push(existing);
+        }
+      }
+    }
+
+    if (exactAccountIdMatches.length) {
+      const bestMatch = exactAccountIdMatches
+        .sort((left, right) => scoreExistingRecordMatch(right, input) - scoreExistingRecordMatch(left, input))[0];
+      return {
+        id: bestMatch.id,
+        existing: bestMatch
+      };
+    }
+
+    const exactIdentityMatches: AccountRecord[] = [];
+    for (const account of accounts) {
+      const existing = await readAccount(account.id);
+      if (!existing) {
+        continue;
+      }
+      const hasExactIdentityMatch = matchesComparable(existing.battleTag, currentBattleTag)
+        || matchesComparable(existing.email, currentEmail)
+        || matchesComparable(existing.phone, currentPhone)
+        || matchesComparable(existing.email, currentBattleTag);
+      if (hasExactIdentityMatch) {
+        exactIdentityMatches.push(existing);
+      }
+    }
+
+    if (exactIdentityMatches.length === 1) {
+      return {
+        id: exactIdentityMatches[0].id,
+        existing: exactIdentityMatches[0]
+      };
+    }
+
+    if (exactIdentityMatches.length > 1) {
+      const bestMatch = exactIdentityMatches
+        .sort((left, right) => scoreExistingRecordMatch(right, input) - scoreExistingRecordMatch(left, input))[0];
+      if (scoreExistingRecordMatch(bestMatch, input) >= 10) {
+        return {
+          id: bestMatch.id,
+          existing: bestMatch
+        };
+      }
+    }
+  }
+
+  const occupiedIds = new Set(accounts.map((account) => account.id));
+  if (!occupiedIds.has(baseId)) {
+    return {
+      id: baseId,
+      existing: null
+    };
+  }
+
+  let suffix = 2;
+  while (occupiedIds.has(`${baseId}-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return {
+    id: `${baseId}-${suffix}`,
+    existing: null
+  };
 }
 
 function currentTimestampMs(): number {
@@ -40,7 +179,10 @@ function compatRegistryPayload(snapshot: BattleNetSnapshot): Record<string, Reco
 
 async function writeCompatibilityFiles(accountDir: string, record: AccountRecord, snapshot: BattleNetSnapshot): Promise<void> {
   const infoPayload = {
-    account: record.email,
+    account: record.email || record.phone || record.battleTag,
+    battleTag: record.battleTag,
+    email: record.email,
+    phone: record.phone,
     description: record.description,
     backupTime: currentTimestampMs(),
     lastLoginTime: currentTimestampMs(),
@@ -70,6 +212,8 @@ async function writeCompatibilityFiles(accountDir: string, record: AccountRecord
     wtcg: snapshot.registry.wtcg,
     encryption: snapshot.registry.encryption,
     unifiedAuth: snapshot.registry.unifiedAuth,
+    battleTag: snapshot.battleTag,
+    accountId: snapshot.accountId,
     battleNetConfigText: snapshot.configRaw,
     battleNetConfigJson: snapshot.configJson,
     battleNetFileBlobs: snapshot.fileBlobs,
@@ -79,16 +223,25 @@ async function writeCompatibilityFiles(accountDir: string, record: AccountRecord
 }
 
 async function readCompatMeta(folderPath: string, accountId: string): Promise<AccountRecord | null> {
+  const meta = await readJsonFile<Record<string, unknown> | null>(path.join(folderPath, META_FILE), null);
   const info = await readJsonFile<Record<string, unknown> | null>(path.join(folderPath, "info.json"), null);
   if (!info) {
     return null;
   }
 
-  const email = String(info.account || accountId);
-  const updatedAt = typeof info.importedAt === "string" ? info.importedAt : nowIso();
+  const email = String(meta?.email || info.email || info.account || "");
+  const phone = String(meta?.phone || info.phone || "");
+  const battleTag = String(meta?.battleTag || info.battleTag || "");
+  const updatedAt = typeof meta?.updatedAt === "string"
+    ? meta.updatedAt
+    : typeof info.importedAt === "string"
+      ? info.importedAt
+      : nowIso();
   return {
     id: accountId,
+    battleTag,
     email,
+    phone,
     description: String(info.description || ""),
     createdAt: updatedAt,
     updatedAt,
@@ -125,6 +278,8 @@ async function readCompatSnapshot(folderPath: string): Promise<BattleNetSnapshot
       configJson: fullSnapshot.battleNetConfigJson ?? configJson,
       fileBlobs: (fullSnapshot.battleNetFileBlobs as Record<string, string>) || fileBlobs,
       gameAccount,
+      battleTag: typeof fullSnapshot.battleTag === "string" ? fullSnapshot.battleTag : "",
+      accountId: typeof fullSnapshot.accountId === "string" ? fullSnapshot.accountId : "",
       savedAccountNames: [],
       registry: rawRegistry,
       registryExports: [],
@@ -141,6 +296,8 @@ async function readCompatSnapshot(folderPath: string): Promise<BattleNetSnapshot
       configJson,
       fileBlobs,
       gameAccount: "",
+      battleTag: "",
+      accountId: "",
       savedAccountNames: [],
       registry,
       registryExports: [],
@@ -167,6 +324,8 @@ async function normalizeSnapshot(folderPath: string, snapshot: BattleNetSnapshot
     configJson: raw.configJson ?? raw.battleNetConfigJson ?? null,
     fileBlobs,
     gameAccount: typeof raw.gameAccount === "string" ? raw.gameAccount : "",
+    battleTag: typeof raw.battleTag === "string" ? raw.battleTag : "",
+    accountId: typeof raw.accountId === "string" ? raw.accountId : "",
     savedAccountNames: Array.isArray(raw.savedAccountNames) ? raw.savedAccountNames.map((item) => String(item || "").trim()).filter(Boolean) : [],
     registry: (raw.registry as BattleNetSnapshot["registry"]) || {
       wow: (raw.wow as BattleNetSnapshot["registry"]["wow"]) || {},
@@ -187,6 +346,14 @@ export function maskEmail(value: string): string {
   return `${name.slice(0, 2)}***@${domain}`;
 }
 
+export function maskPhone(value: string): string {
+  const digitsOnly = value.replace(/\s+/g, "");
+  if (!digitsOnly || digitsOnly.length < 7) {
+    return value;
+  }
+  return `${digitsOnly.slice(0, 3)}****${digitsOnly.slice(-4)}`;
+}
+
 export async function listAccounts(): Promise<AccountListItem[]> {
   const paths = getAppPaths();
   const entries = await fs.readdir(paths.accountsDir, { withFileTypes: true }).catch(() => []);
@@ -202,8 +369,12 @@ export async function listAccounts(): Promise<AccountListItem[]> {
     }
     items.push({
       id: account.id,
+      battleTag: account.battleTag,
       email: account.email,
       maskedEmail: maskEmail(account.email),
+      phone: account.phone,
+      maskedPhone: maskPhone(account.phone),
+      displayName: getAccountDisplayName(account),
       description: account.description || "-",
       lastSaved: formatDisplayDate(account.updatedAt),
       importedFrom: account.importedFrom,
@@ -231,7 +402,22 @@ export async function readAccount(accountId: string): Promise<AccountRecord | nu
   const metaPath = path.join(folderPath, META_FILE);
 
   if (await fileExists(metaPath)) {
-    return readJsonFile<AccountRecord | null>(metaPath, null);
+    const payload = await readJsonFile<Record<string, unknown> | null>(metaPath, null);
+    if (!payload) {
+      return null;
+    }
+    return {
+      id: String(payload.id || accountId),
+      battleTag: String(payload.battleTag || ""),
+      email: String(payload.email || ""),
+      phone: String(payload.phone || ""),
+      description: String(payload.description || ""),
+      createdAt: String(payload.createdAt || nowIso()),
+      updatedAt: String(payload.updatedAt || nowIso()),
+      importedFrom: typeof payload.importedFrom === "string" ? payload.importedFrom : undefined,
+      snapshotVersion: Number(payload.snapshotVersion || 1),
+      sortOrder: typeof payload.sortOrder === "number" ? payload.sortOrder : undefined
+    };
   }
 
   const legacyOwnPath = path.join(folderPath, "account.json");
@@ -240,7 +426,9 @@ export async function readAccount(accountId: string): Promise<AccountRecord | nu
     if (payload && typeof payload.id === "string" && typeof payload.email === "string") {
       const record: AccountRecord = {
         id: payload.id,
+        battleTag: String(payload.battleTag || ""),
         email: payload.email,
+        phone: String(payload.phone || ""),
         description: String(payload.description || ""),
         createdAt: String(payload.createdAt || nowIso()),
         updatedAt: String(payload.updatedAt || nowIso()),
@@ -273,18 +461,22 @@ export async function readAccountSnapshot(accountId: string): Promise<BattleNetS
 }
 
 export async function saveAccount(input: {
+  battleTag: string;
   email: string;
+  phone: string;
   description: string;
   snapshot: BattleNetSnapshot;
   importedFrom?: string;
+  preferExisting?: boolean;
 }): Promise<AccountRecord> {
   const paths = getAppPaths();
-  const id = toAccountId(input.email || `account-${Date.now()}`);
-  const existing = await readAccount(id);
+  const { id, existing } = await resolveAccountIdForSave(input, { preferExisting: input.preferExisting });
   const timestamp = nowIso();
   const record: AccountRecord = {
     id,
+    battleTag: input.battleTag,
     email: input.email,
+    phone: input.phone,
     description: input.description,
     createdAt: existing?.createdAt || timestamp,
     updatedAt: timestamp,
@@ -309,12 +501,19 @@ export async function updateAccountDescription(accountId: string, description: s
     return null;
   }
 
-  return saveAccount({
-    email: existing.email,
+  const next: AccountRecord = {
+    ...existing,
     description,
-    snapshot,
-    importedFrom: existing.importedFrom
-  });
+    updatedAt: nowIso()
+  };
+
+  const accountDir = path.join(getAppPaths().accountsDir, accountId);
+  await ensureDir(accountDir);
+  await writeJsonFile(path.join(accountDir, META_FILE), next);
+  await writeJsonFile(path.join(accountDir, SNAPSHOT_FILE), snapshot);
+  await writeCompatibilityFiles(accountDir, next, snapshot);
+
+  return next;
 }
 
 export async function reorderAccounts(accountIds: string[]): Promise<AccountRecord[]> {

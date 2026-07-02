@@ -16,11 +16,15 @@ import { getAppPaths } from "../../infra/storage/app-paths.js";
 import { fileExists } from "../../infra/system/fs.js";
 import { logger } from "../../infra/system/logger.js";
 import { IPC_CHANNELS, APP_NAME, APP_VERSION } from "../../shared/constants/app.js";
+import { getAccountDisplayName } from "../../shared/account-display.js";
 import { AppStateDto } from "../../shared/types/app.js";
 import { selectDirectory, selectImportSource } from "../shell/dialogs.js";
 import { closeMainWindow, getMainWindow, getWindowState, minimizeMainWindow, toggleMainWindowMaximize } from "../window/main-window.js";
 import { detectBattleNetLauncherPath, detectDefaultGameDirectory, normalizeInstallDirectory } from "../../infra/battlenet/battlenet-paths.js";
 import { readBattleNetConfig } from "../../infra/battlenet/battlenet-config.js";
+import { detectBattleNetAccountLabel } from "../../infra/battlenet/battlenet-account-label.js";
+import { readCurrentBattleNetIdentity } from "../../infra/battlenet/battlenet-current-identity.js";
+import { readBattleNetLocalState } from "../../infra/battlenet/battlenet-local-state.js";
 import { readBattleNetRegistrySnapshot, readRegistrySummary } from "../../infra/battlenet/battlenet-registry.js";
 
 function extractSavedAccountNames(configJson: unknown): string[] {
@@ -51,8 +55,19 @@ function extractSavedAccountNames(configJson: unknown): string[] {
 }
 
 function extractCurrentAccountHintFromConfig(configJson: unknown): string {
-  const savedAccountNames = extractSavedAccountNames(configJson);
+  if (!configJson || typeof configJson !== "object") {
+    return "";
+  }
 
+  const client = (configJson as Record<string, unknown>).Client;
+  if (client && typeof client === "object") {
+    const lastLoginAccount = String((client as Record<string, unknown>).LastLoginAccount || "").trim();
+    if (lastLoginAccount) {
+      return lastLoginAccount;
+    }
+  }
+
+  const savedAccountNames = extractSavedAccountNames(configJson);
   if (savedAccountNames.length === 1) {
     return savedAccountNames[0];
   }
@@ -86,6 +101,26 @@ async function resolveCurrentAccountHint(
   const configHint = extractCurrentAccountHintFromConfig(configJson);
   const currentGameAccount = getCurrentGameAccount(registrySummary);
   const currentRegistry = await readBattleNetRegistrySnapshot();
+  const currentIdentity = await readCurrentBattleNetIdentity();
+
+  if (currentIdentity?.accountId) {
+    for (const account of accounts) {
+      const snapshot = await readAccountSnapshot(account.id);
+      if (!snapshot) {
+        continue;
+      }
+      if (snapshot.accountId && snapshot.accountId === currentIdentity.accountId) {
+        return getAccountDisplayName(account);
+      }
+    }
+
+    // 如果运行时已经识别到当前 Battle.net 身份，但本地账号库里还没有对应快照，
+    // 优先展示运行时身份，避免再被旧的 UnifiedAuth 匹配误导成其他账号。
+    if (currentIdentity.battleTag.trim()) {
+      return currentIdentity.battleTag.trim();
+    }
+    return currentIdentity.accountId.trim();
+  }
 
   for (const account of accounts) {
     const snapshot = await readAccountSnapshot(account.id);
@@ -93,24 +128,30 @@ async function resolveCurrentAccountHint(
       continue;
     }
     if (hasExactUnifiedAuthMatch(snapshot.registry.unifiedAuth || {}, currentRegistry.unifiedAuth || {})) {
-      return account.email;
+      return getAccountDisplayName(account);
     }
   }
 
-  if (configHint && accounts.some((item) => item.email.trim().toLowerCase() === configHint.trim().toLowerCase())) {
+  if (configHint && accounts.some((item) =>
+    item.email.trim().toLowerCase() === configHint.trim().toLowerCase()
+    || item.phone.trim().toLowerCase() === configHint.trim().toLowerCase()
+  )) {
     for (const account of accounts) {
-      if (account.email.trim().toLowerCase() !== configHint.trim().toLowerCase()) {
+      if (
+        account.email.trim().toLowerCase() !== configHint.trim().toLowerCase()
+        && account.phone.trim().toLowerCase() !== configHint.trim().toLowerCase()
+      ) {
         continue;
       }
       const snapshot = await readAccountSnapshot(account.id);
       const snapshotGameAccount = snapshot?.registry.wow.GAME_ACCOUNT?.value?.trim() || "";
       if (!snapshotGameAccount || !currentGameAccount || snapshotGameAccount === currentGameAccount) {
-        return account.email;
+        return getAccountDisplayName(account);
       }
     }
   }
 
-  return configHint;
+  return "";
 }
 
 async function resolveSettingsWithDetection() {
@@ -147,6 +188,11 @@ async function buildAppState(): Promise<AppStateDto> {
   const launcherPath = settings.battleNetLauncherPath || await detectBattleNetLauncherPath();
   const config = await readBattleNetConfig();
   const savedAccountNames = extractSavedAccountNames(config.json);
+  const currentIdentity = await readCurrentBattleNetIdentity();
+  const currentBattleTagLabel = await detectBattleNetAccountLabel();
+  const currentLocalFiles = await readBattleNetLocalState(currentIdentity?.accountId || "");
+  const currentLocalFileCount = Object.keys(currentLocalFiles).length;
+  const currentBrowserCacheFileCount = Object.keys(currentLocalFiles).filter((key) => key.startsWith("BrowserCaches\\")).length;
   const importableCount = await fs.readdir(path.join(process.env.APPDATA || "", "NewBeeBox", "battleCache"), { withFileTypes: true })
     .then((entries) => entries.filter((entry) => entry.isDirectory()).length)
     .catch(() => 0);
@@ -161,6 +207,10 @@ async function buildAppState(): Promise<AppStateDto> {
     currentSavedAccountName: await resolveCurrentAccountHint(accounts, registrySummary, config.json),
     currentSavedAccountCandidates: savedAccountNames,
     currentGameAccount: registrySummary[0] || "-",
+    currentBattleTag: currentBattleTagLabel || currentIdentity?.battleTag || "",
+    currentAccountId: currentIdentity?.accountId || "",
+    currentLocalFileCount,
+    currentBrowserCacheFileCount,
     wowAccounts: registrySummary.slice(1),
     accountCount: accounts.length,
     importableCount,
@@ -224,7 +274,7 @@ export function registerIpc(): void {
     return true;
   });
 
-  ipcMain.handle(IPC_CHANNELS.SAVE_CURRENT_ACCOUNT, async (_event, payload: { accountName: string; description: string }) => {
+  ipcMain.handle(IPC_CHANNELS.SAVE_CURRENT_ACCOUNT, async (_event, payload: { battleTag: string; email: string; phone: string; description: string }) => {
     const result = await saveCurrentAccount(payload);
     await logger.info(result.message);
     return result;
@@ -322,7 +372,7 @@ export function registerIpc(): void {
   ipcMain.handle("account:update-note", async (_event, payload: { id: string; description: string }) => {
     const record = await updateAccountDescription(payload.id, payload.description);
     const result = record
-      ? { ok: true, message: `已更新备注：${record.email}` }
+      ? { ok: true, message: `已更新备注：${getAccountDisplayName(record)}` }
       : { ok: false, message: "未找到要更新的账号。" };
     await logger.info(result.message);
     return result;

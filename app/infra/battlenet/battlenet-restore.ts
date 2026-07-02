@@ -42,7 +42,7 @@ export async function restoreBattleNetSnapshotWithProfile(
     throw new Error(`目标账号缺少 Battle.net.config 账号指向，无法按 ${profile} 方案切换。`);
   }
 
-  if (profile === "D") {
+  if (profile === "D" || profile === "M") {
     await patchBattleNetConfig({
       savedAccountName: fields.savedAccountName
     });
