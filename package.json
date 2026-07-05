@@ -16,7 +16,8 @@
     "start": "npm run build && electron .",
     "dev": "npm run build && electron .",
     "pack:win": "npm run build && powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\package-win.ps1 -DirOnly",
-    "dist:win": "npm run build && powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\package-win.ps1"
+    "dist:win": "npm run build && powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\package-win.ps1",
+    "dist:msix": "npm run build && powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\package-msix.ps1"
   },
   "devDependencies": {
     "@types/node": "^24.0.13",

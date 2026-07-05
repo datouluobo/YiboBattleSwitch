@@ -41,8 +41,8 @@ Implemented in the current desktop build:
 
 Not yet completed for Microsoft Store technical submission:
 
-- no `appx` or `msix` packaging target is configured yet;
-- privacy statement, support URL, and final publisher-facing legal material still need to be finalized in Partner Center;
+- the repository now provides an unsigned `msix` packaging flow for Store submission, but the final Partner Center package identity still needs to be filled in;
+- support URL and final publisher-facing store metadata still need to be finalized in Partner Center;
 - final screenshots should still be captured from a release-candidate build before submission.
 
 ## Project Layout
@@ -85,6 +85,7 @@ Packaging:
 
 ```bash
 npm run dist:win
+npm run dist:msix
 ```
 
 ## Release Material
