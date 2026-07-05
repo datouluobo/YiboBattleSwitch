@@ -37,7 +37,6 @@ export interface DesktopApi {
   importLibrary: (sourcePath: string) => Promise<RendererOperationResult>;
   backupCurrentState: () => Promise<RendererOperationResult>;
   restoreLatestBackup: () => Promise<RendererOperationResult>;
-  importFromNewBeeBox: () => Promise<RendererOperationResult>;
   openDirectory: (targetPath: string) => Promise<unknown>;
   openExternal: (targetUrl: string) => Promise<unknown>;
   getWindowState: () => Promise<RendererWindowState>;

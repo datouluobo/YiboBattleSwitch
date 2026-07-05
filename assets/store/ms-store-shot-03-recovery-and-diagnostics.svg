@@ -1,0 +1,53 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="60" x2="1520" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D456C"/>
+      <stop offset="1" stop-color="#13253A"/>
+    </linearGradient>
+    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FBFDFF"/>
+      <stop offset="1" stop-color="#E6F1FB"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1340" cy="180" r="220" fill="#5DC7FF" fill-opacity="0.09"/>
+  <circle cx="220" cy="730" r="230" fill="#89E2FF" fill-opacity="0.08"/>
+
+  <text x="90" y="104" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Screenshot 3</text>
+  <text x="90" y="154" fill="#D5EEFF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">Recovery, state inspection, and diagnostics when a switch goes wrong</text>
+
+  <rect x="76" y="206" width="1448" height="612" rx="28" fill="url(#shell)"/>
+  <rect x="76" y="206" width="1448" height="78" rx="28" fill="#EEF6FD"/>
+  <rect x="112" y="232" width="48" height="48" rx="12" fill="#1D9DF2"/>
+  <rect x="178" y="238" width="228" height="16" rx="8" fill="#0F2A41"/>
+  <rect x="178" y="262" width="160" height="12" rx="6" fill="#7A90A3"/>
+
+  <rect x="112" y="320" width="676" height="204" rx="24" fill="#FFFFFF"/>
+  <rect x="146" y="354" width="150" height="18" rx="9" fill="#0F2A41"/>
+  <rect x="146" y="394" width="286" height="14" rx="7" fill="#8FA6B9"/>
+  <rect x="146" y="434" width="604" height="22" rx="11" fill="#EAF3FA"/>
+  <rect x="146" y="474" width="604" height="22" rx="11" fill="#EAF3FA"/>
+
+  <rect x="824" y="320" width="588" height="204" rx="24" fill="#FFFFFF"/>
+  <rect x="858" y="354" width="114" height="18" rx="9" fill="#0F2A41"/>
+  <rect x="858" y="394" width="218" height="14" rx="7" fill="#8FA6B9"/>
+  <rect x="858" y="432" width="238" height="48" rx="16" fill="#EAF3FA"/>
+  <rect x="1114" y="432" width="258" height="48" rx="16" fill="#1D9DF2"/>
+
+  <rect x="112" y="558" width="628" height="220" rx="24" fill="#FFFFFF"/>
+  <rect x="146" y="592" width="92" height="18" rx="9" fill="#0F2A41"/>
+  <rect x="146" y="632" width="560" height="16" rx="8" fill="#EAF3FA"/>
+  <rect x="146" y="664" width="488" height="16" rx="8" fill="#EAF3FA"/>
+  <rect x="146" y="696" width="530" height="16" rx="8" fill="#EAF3FA"/>
+  <rect x="146" y="728" width="454" height="16" rx="8" fill="#EAF3FA"/>
+
+  <rect x="776" y="558" width="636" height="220" rx="24" fill="#FFFFFF"/>
+  <rect x="810" y="592" width="82" height="18" rx="9" fill="#0F2A41"/>
+  <rect x="810" y="634" width="568" height="18" rx="9" fill="#EAF3FA"/>
+  <rect x="810" y="668" width="568" height="18" rx="9" fill="#EAF3FA"/>
+  <rect x="810" y="702" width="568" height="18" rx="9" fill="#EAF3FA"/>
+  <rect x="810" y="736" width="196" height="18" rx="9" fill="#F4D7D9"/>
+
+  <text x="90" y="860" fill="#B9E5FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">Draft listing art for backup restore and diagnostic workflows.</text>
+</svg>

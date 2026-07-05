@@ -17,7 +17,7 @@
             <div>
               <div class="flex items-center gap-3">
                 <span class="text-[17px] font-bold text-primary" id="wordmark">YiboBattleSwitch</span>
-                <span class="text-[13px] text-slate-400" id="versionLabel">v0.4.2</span>
+                <span class="text-[13px] text-slate-400" id="versionLabel">v0.4.3</span>
                 <span class="text-[13px] text-slate-300">/</span>
                 <span class="text-[18px] font-semibold text-ink" id="appTitleInline">暴雪战网 Battle.net 切换工具</span>
               </div>
@@ -203,7 +203,6 @@
                 <button class="scheme-btn rounded-[8px] border border-stroke bg-surface-soft px-3 py-1.5 text-[12px] font-semibold text-ink transition-colors" data-switch-profile="W" id="switchProfileWBtn" type="button" disabled title="W 方案暂不开放">W 方案</button>
               </div>
               <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="openDataDirBtn" type="button">打开数据目录</button>
-              <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="importNewBeeBoxBtn" type="button">导入 NewBeeBox</button>
               <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="restoreBackupBtn" type="button">恢复最近一次备份</button>
               <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="backupStateBtn" type="button">备份当前状态</button>
               <button class="hover-lift press-scale rounded-[10px] border border-stroke bg-surface px-4 py-2 text-[13px] font-semibold text-ink shadow-sm" id="diagnosticSnapshotBtn" type="button">诊断快照</button>
@@ -224,20 +223,26 @@
         <div class="flex flex-wrap items-center justify-between gap-4 text-[14px]">
           <div class="text-slate-400">© 2026 YiboSoft. All rights reserved.</div>
           <div class="flex flex-wrap items-center gap-2">
-            <span class="mr-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-400">GitHub</span>
-            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" data-tooltip="YiboBattleSwitch：Battle.net / 魔兽世界多账号本地切换工具" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">
+            <span class="mr-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-400">More WoW</span>
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" data-tooltip="项目主页与源码仓库" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">
               <span class="plugin-chip__icon" aria-hidden="true">
                 <img alt="" data-asset-src="../../logo.png">
               </span>
               <span>YiboBattleSwitch</span>
             </a>
-            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBeastPaths" data-tooltip="YiboBeastPaths：潘达利亚隐身宠物巡逻路径" href="https://github.com/datouluobo/YiboBeastPaths" rel="noreferrer" target="_blank">
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboAltoBoss" data-tooltip="其它 WoW 插件：同子战网角色的 Boss 击杀与位面观测面板" href="https://github.com/datouluobo/YiboAltoBoss" rel="noreferrer" target="_blank">
+              <span class="plugin-chip__icon" aria-hidden="true">
+                <img alt="" data-asset-src="../../assets/plugins/yiboaltoboss.png">
+              </span>
+              <span>YiboAltoBoss</span>
+            </a>
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBeastPaths" data-tooltip="其它 WoW 插件：潘达利亚隐身宠物巡逻路径" href="https://github.com/datouluobo/YiboBeastPaths" rel="noreferrer" target="_blank">
               <span class="plugin-chip__icon" aria-hidden="true">
                 <img alt="" data-asset-src="../../assets/plugins/yibobeastpaths.png">
               </span>
               <span>YiboBeastPaths</span>
             </a>
-            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboQuestBlocker" data-tooltip="YiboQuestBlocker：自动放弃不需要的任务" href="https://github.com/datouluobo/YiboQuestBlocker" rel="noreferrer" target="_blank">
+            <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboQuestBlocker" data-tooltip="其它 WoW 插件：自动放弃不需要的任务" href="https://github.com/datouluobo/YiboQuestBlocker" rel="noreferrer" target="_blank">
               <span class="plugin-chip__icon" aria-hidden="true">
                 <img alt="" data-asset-src="../../assets/plugins/yiboquestblocker.png">
               </span>
@@ -261,14 +266,15 @@
           <img alt="YiboBattleSwitch Logo" class="mt-0.5 h-10 w-10 rounded-[10px] object-cover shadow-sm" src="../../logo.png">
           <div>
             <h2 class="text-[20px] font-bold text-ink">YiboBattleSwitch</h2>
-            <p class="mt-1 text-[14px] text-ink-soft">Battle.net / 魔兽世界多账号本地切换工具</p>
+            <p class="mt-1 text-[14px] text-ink-soft">Battle.net 账号本地切换工具</p>
           </div>
         </div>
         <button class="text-slate-400 hover:text-ink" id="closeAboutTop" type="button">X</button>
       </div>
       <div class="mt-5 rounded-[14px] border border-stroke bg-surface-soft p-4">
         <div class="text-[13px] font-semibold text-ink">产品说明</div>
-        <p class="mt-2 text-[14px] leading-6 text-ink-soft">为需要频繁切换多个 Battle.net / WoW 账号的玩家提供稳定、直观的本地账号切换体验。</p>
+        <p class="mt-2 text-[14px] leading-6 text-ink-soft">为需要频繁切换多个 Battle.net 账号的玩家提供稳定、直观的本地切换体验。</p>
+        <p class="mt-3 text-[13px] leading-6 text-ink-soft">本工具是独立第三方本地工具，不隶属于 Blizzard 或 Battle.net。</p>
       </div>
       <div class="mt-4 grid gap-3 text-[14px] text-ink-soft md:grid-cols-2">
         <div class="rounded-[14px] border border-stroke bg-surface-soft p-4">
@@ -286,7 +292,17 @@
         <div class="rounded-[14px] border border-stroke bg-surface-soft p-4 break-all" id="aboutDataDir"></div>
         <div class="rounded-[14px] border border-stroke bg-surface-soft p-4">
           <div class="text-[13px] font-semibold text-ink">项目地址</div>
-          <a class="mt-2 inline-flex text-[14px] text-primary hover:underline" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">GitHub: datouluobo/YiboBattleSwitch</a>
+          <a class="mt-2 inline-flex text-[14px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">GitHub: datouluobo/YiboBattleSwitch</a>
+          <div class="mt-3 flex flex-wrap gap-3">
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/EULA.md" href="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/EULA.md" rel="noreferrer" target="_blank">最终用户许可协议</a>
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/PRIVACY.md" href="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/PRIVACY.md" rel="noreferrer" target="_blank">隐私政策</a>
+          </div>
+          <div class="mt-4 text-[13px] font-semibold text-ink">其它 WoW 项目</div>
+          <div class="mt-2 flex flex-wrap gap-3">
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboAltoBoss" href="https://github.com/datouluobo/YiboAltoBoss" rel="noreferrer" target="_blank">YiboAltoBoss</a>
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBeastPaths" href="https://github.com/datouluobo/YiboBeastPaths" rel="noreferrer" target="_blank">YiboBeastPaths</a>
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboQuestBlocker" href="https://github.com/datouluobo/YiboQuestBlocker" rel="noreferrer" target="_blank">YiboQuestBlocker</a>
+          </div>
         </div>
       </div>
       <div class="mt-5 flex justify-end">

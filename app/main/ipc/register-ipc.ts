@@ -1,9 +1,7 @@
 import { ipcMain, shell } from "electron";
 import path from "node:path";
-import { promises as fs } from "node:fs";
 import { compareLatestDiagnostics } from "../../domain/diagnostics/compare-snapshots.js";
 import { takeDiagnosticSnapshot } from "../../domain/diagnostics/take-snapshot.js";
-import { importFromNewBeeBox } from "../../domain/account-switch/import-newbeebox.js";
 import { saveCurrentAccount } from "../../domain/account-switch/save-current-account.js";
 import { switchAccount } from "../../domain/account-switch/switch-account.js";
 import { createBackup } from "../../domain/backup/create-backup.js";
@@ -15,7 +13,7 @@ import { getSettings, updateSettings } from "../../infra/storage/app-config.js";
 import { getAppPaths } from "../../infra/storage/app-paths.js";
 import { fileExists } from "../../infra/system/fs.js";
 import { logger } from "../../infra/system/logger.js";
-import { IPC_CHANNELS, APP_NAME, APP_VERSION } from "../../shared/constants/app.js";
+import { IPC_CHANNELS, APP_NAME, APP_VERSION, isAllowedExternalUrl } from "../../shared/constants/app.js";
 import { getAccountDisplayName } from "../../shared/account-display.js";
 import { AppStateDto } from "../../shared/types/app.js";
 import { selectDirectory, selectImportSource } from "../shell/dialogs.js";
@@ -194,9 +192,6 @@ async function buildAppState(): Promise<AppStateDto> {
   const currentLocalFiles = await readBattleNetLocalState(currentIdentity?.accountId || "");
   const currentLocalFileCount = Object.keys(currentLocalFiles).length;
   const currentBrowserCacheFileCount = Object.keys(currentLocalFiles).filter((key) => key.startsWith("BrowserCaches\\")).length;
-  const importableCount = await fs.readdir(path.join(process.env.APPDATA || "", "NewBeeBox", "battleCache"), { withFileTypes: true })
-    .then((entries) => entries.filter((entry) => entry.isDirectory()).length)
-    .catch(() => 0);
 
   return {
     appName: APP_NAME,
@@ -214,7 +209,6 @@ async function buildAppState(): Promise<AppStateDto> {
     currentBrowserCacheFileCount,
     wowAccounts: registrySummary.slice(1),
     accountCount: accounts.length,
-    importableCount,
     permissionLabel: "普通权限",
     accounts,
     logs: logger.getRecentLines()
@@ -261,6 +255,10 @@ export function registerIpc(): void {
   });
 
   ipcMain.handle(IPC_CHANNELS.OPEN_EXTERNAL, async (_event, targetUrl: string) => {
+    if (!isAllowedExternalUrl(targetUrl)) {
+      await logger.error(`Blocked external URL: ${targetUrl}`);
+      throw new Error("不允许打开未登记的外部链接。");
+    }
     await shell.openExternal(targetUrl);
     return true;
   });
@@ -330,13 +328,6 @@ export function registerIpc(): void {
 
   ipcMain.handle(IPC_CHANNELS.RESTORE_LATEST_BACKUP, async () => {
     const result = await restoreLatestBackup();
-    await logger.info(result.message);
-    return result;
-  });
-
-  ipcMain.handle(IPC_CHANNELS.IMPORT_FROM_NEWBEEBOX, async () => {
-    const result = await importFromNewBeeBox();
-    await refreshTrayMenu();
     await logger.info(result.message);
     return result;
   });

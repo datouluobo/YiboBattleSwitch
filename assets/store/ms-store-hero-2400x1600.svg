@@ -1,0 +1,95 @@
+<svg width="2400" height="1600" viewBox="0 0 2400 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="240" y1="120" x2="2160" y2="1480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B4F7E"/>
+      <stop offset="1" stop-color="#0F2740"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F7FBFF" stop-opacity="0.96"/>
+      <stop offset="1" stop-color="#DCEEFF" stop-opacity="0.86"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#58C5FF"/>
+      <stop offset="1" stop-color="#1D9DF2"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="2400" height="1600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="40" flood-color="#04131F" flood-opacity="0.26"/>
+    </filter>
+  </defs>
+
+  <rect width="2400" height="1600" fill="url(#bg)"/>
+  <circle cx="2140" cy="280" r="320" fill="#4FC3F7" fill-opacity="0.08"/>
+  <circle cx="280" cy="1350" r="380" fill="#8EE3FF" fill-opacity="0.10"/>
+  <circle cx="1610" cy="1180" r="420" fill="#132E47" fill-opacity="0.46"/>
+
+  <g filter="url(#shadow)">
+    <rect x="1060" y="170" width="1040" height="1220" rx="34" fill="url(#panel)"/>
+    <rect x="1060" y="170" width="1040" height="92" rx="34" fill="#EEF6FD"/>
+    <rect x="1104" y="206" width="60" height="60" rx="16" fill="url(#accent)"/>
+    <rect x="1186" y="214" width="278" height="20" rx="10" fill="#0F2740"/>
+    <rect x="1186" y="246" width="188" height="14" rx="7" fill="#6F879D"/>
+
+    <rect x="1110" y="318" width="940" height="138" rx="24" fill="#FFFFFF"/>
+    <rect x="1140" y="352" width="132" height="20" rx="10" fill="#0F2740"/>
+    <rect x="1294" y="352" width="448" height="18" rx="9" fill="#CEDCE8"/>
+    <rect x="1758" y="338" width="166" height="48" rx="16" fill="url(#accent)"/>
+    <rect x="1938" y="338" width="84" height="48" rx="16" fill="#E6F0F7"/>
+    <rect x="1140" y="392" width="760" height="28" rx="14" fill="#F2F7FB"/>
+
+    <rect x="1110" y="500" width="940" height="112" rx="22" fill="#1D9DF2"/>
+    <rect x="1160" y="540" width="224" height="24" rx="12" fill="#FFFFFF"/>
+    <rect x="1410" y="540" width="160" height="24" rx="12" fill="#BDE7FF"/>
+    <rect x="1772" y="528" width="210" height="48" rx="16" fill="#FFFFFF" fill-opacity="0.18"/>
+
+    <rect x="1110" y="654" width="940" height="124" rx="22" fill="#FFFFFF"/>
+    <rect x="1150" y="698" width="54" height="54" rx="14" fill="#E7F4FD"/>
+    <rect x="1230" y="696" width="172" height="18" rx="9" fill="#0F2740"/>
+    <rect x="1230" y="728" width="266" height="14" rx="7" fill="#6C859A"/>
+    <rect x="1598" y="692" width="180" height="20" rx="10" fill="#0F2740"/>
+    <rect x="1810" y="692" width="150" height="20" rx="10" fill="#0F2740"/>
+    <rect x="1598" y="726" width="198" height="14" rx="7" fill="#A4B8C9"/>
+    <rect x="1810" y="726" width="140" height="14" rx="7" fill="#A4B8C9"/>
+
+    <rect x="1110" y="804" width="940" height="124" rx="22" fill="#F8FBFD"/>
+    <rect x="1150" y="848" width="54" height="54" rx="14" fill="#E7F4FD"/>
+    <rect x="1230" y="846" width="214" height="18" rx="9" fill="#0F2740"/>
+    <rect x="1230" y="878" width="250" height="14" rx="7" fill="#6C859A"/>
+    <rect x="1598" y="842" width="180" height="20" rx="10" fill="#0F2740"/>
+    <rect x="1810" y="842" width="150" height="20" rx="10" fill="#0F2740"/>
+    <rect x="1598" y="876" width="198" height="14" rx="7" fill="#A4B8C9"/>
+    <rect x="1810" y="876" width="140" height="14" rx="7" fill="#A4B8C9"/>
+
+    <rect x="1110" y="972" width="446" height="320" rx="24" fill="#FFFFFF"/>
+    <rect x="1594" y="972" width="456" height="320" rx="24" fill="#FFFFFF"/>
+    <rect x="1144" y="1014" width="122" height="18" rx="9" fill="#0F2740"/>
+    <rect x="1628" y="1014" width="162" height="18" rx="9" fill="#0F2740"/>
+    <rect x="1144" y="1060" width="368" height="22" rx="11" fill="#EAF3FA"/>
+    <rect x="1144" y="1100" width="324" height="22" rx="11" fill="#EAF3FA"/>
+    <rect x="1144" y="1140" width="280" height="22" rx="11" fill="#EAF3FA"/>
+    <rect x="1628" y="1060" width="378" height="22" rx="11" fill="#EAF3FA"/>
+    <rect x="1628" y="1100" width="344" height="22" rx="11" fill="#EAF3FA"/>
+    <rect x="1628" y="1140" width="302" height="22" rx="11" fill="#EAF3FA"/>
+    <rect x="1144" y="1206" width="210" height="50" rx="16" fill="#1D9DF2"/>
+    <rect x="1628" y="1206" width="210" height="50" rx="16" fill="#EAF3FA"/>
+  </g>
+
+  <g>
+    <circle cx="446" cy="394" r="186" fill="white" fill-opacity="0.98"/>
+    <circle cx="446" cy="394" r="154" stroke="#0B4F7E" stroke-width="30" fill="none"/>
+    <circle cx="392" cy="378" r="34" fill="#0B4F7E"/>
+    <path d="M322 516C322 472.922 356.922 438 400 438H384C427.078 438 462 472.922 462 516V530H322V516Z" fill="#0B4F7E"/>
+    <circle cx="510" cy="486" r="32" fill="#0B4F7E"/>
+    <path d="M444 612C444 571.131 477.131 538 518 538H502C542.869 538 576 571.131 576 612V622H444V612Z" fill="#0B4F7E"/>
+    <path d="M404 286C448 250 512 252 555 292" stroke="#0B4F7E" stroke-width="28" stroke-linecap="round"/>
+    <path d="M563 262L594 328L522 322L563 262Z" fill="#0B4F7E"/>
+    <path d="M520 656C474 686 410 682 372 642" stroke="#0B4F7E" stroke-width="28" stroke-linecap="round"/>
+    <path d="M338 620L406 606L374 674L338 620Z" fill="#0B4F7E"/>
+  </g>
+
+  <text x="210" y="860" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="110" font-weight="700">YiboBattleSwitch</text>
+  <text x="210" y="960" fill="#D5EEFF" font-family="Segoe UI, Arial, sans-serif" font-size="44" font-weight="600">Battle.net / WoW local account switching for Windows</text>
+  <text x="210" y="1080" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="58" font-weight="700">Save current login</text>
+  <text x="210" y="1158" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="58" font-weight="700">Switch with a clear target</text>
+  <text x="210" y="1236" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="58" font-weight="700">Back up and recover fast</text>
+  <text x="210" y="1370" fill="#B9E5FF" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="500">Draft Microsoft Store hero art. Replace with final export size required by Partner Center.</text>
+</svg>

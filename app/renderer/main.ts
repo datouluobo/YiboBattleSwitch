@@ -33,7 +33,6 @@ interface AppStateDto {
   currentBrowserCacheFileCount?: number;
   wowAccounts: string[];
   accountCount: number;
-  importableCount: number;
   permissionLabel: string;
   accounts: AccountListItem[];
   logs: string[];
@@ -401,7 +400,6 @@ function renderDebug(payload: AppStateDto, settings: AppSettings | null): void {
     <div>附加信息：${escapeHtml(wowAccounts)}</div>
     <div>当前切换方案：${escapeHtml(SWITCH_PROFILE_LABELS[switchProfile])}</div>
     <div>账号库数量：${payload.accountCount}</div>
-    <div>可导入数量：${payload.importableCount}</div>
     <div>当前权限：${escapeHtml(payload.permissionLabel)}</div>
   `;
   (document.getElementById("debugDirs") as HTMLDivElement).innerHTML = `
@@ -722,13 +720,6 @@ function bindStaticActions(): void {
   (document.getElementById("refreshStateBtn") as HTMLButtonElement).addEventListener("click", async () => {
     clearNotice();
     await refreshState();
-  });
-
-  (document.getElementById("importNewBeeBoxBtn") as HTMLButtonElement).addEventListener("click", async () => {
-    const result = await runAction(() => window.api.importFromNewBeeBox(), "导入失败");
-    if (result) {
-      await handleResult(result, "导入失败");
-    }
   });
 
   (document.getElementById("restoreBackupBtn") as HTMLButtonElement).addEventListener("click", async () => {

@@ -6,6 +6,7 @@ import { getAppPaths } from "../../infra/storage/app-paths.js";
 import { logger } from "../../infra/system/logger.js";
 import { APP_NAME } from "../../shared/constants/app.js";
 import { ensureSingleInstance } from "./single-instance.js";
+import { applyLaunchAtLoginSettings } from "../window/autostart.js";
 import { createMainWindow, setStartHiddenOnLaunch, showMainWindow } from "../window/main-window.js";
 import { createTray } from "../window/tray.js";
 import { getSettings } from "../../infra/storage/app-config.js";
@@ -23,8 +24,8 @@ async function bootstrap(): Promise<void> {
   await logger.info("App bootstrapping");
   registerIpc();
   const settings = await getSettings();
-  app.setLoginItemSettings({
-    openAtLogin: settings.launchAtLogin,
+  applyLaunchAtLoginSettings({
+    enabled: settings.launchAtLogin,
     openAsHidden: settings.minimizeOnLaunch
   });
   setStartHiddenOnLaunch(settings.minimizeOnLaunch);

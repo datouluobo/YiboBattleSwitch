@@ -71,7 +71,6 @@ export interface AppStateDto {
   currentBrowserCacheFileCount?: number;
   wowAccounts: string[];
   accountCount: number;
-  importableCount: number;
   permissionLabel: string;
   accounts: AccountListItem[];
   logs: string[];

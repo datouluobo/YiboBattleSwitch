@@ -1,0 +1,60 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="60" x2="1480" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D4D79"/>
+      <stop offset="1" stop-color="#10263C"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F9FCFF"/>
+      <stop offset="1" stop-color="#E6F3FF"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1340" cy="126" r="180" fill="#56C4FF" fill-opacity="0.10"/>
+  <circle cx="180" cy="740" r="220" fill="#7FDBFF" fill-opacity="0.08"/>
+
+  <text x="90" y="104" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Screenshot 1</text>
+  <text x="90" y="154" fill="#D5EEFF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">A clear target account before you switch</text>
+
+  <rect x="78" y="198" width="1444" height="624" rx="28" fill="url(#panel)"/>
+  <rect x="78" y="198" width="1444" height="78" rx="28" fill="#EEF6FD"/>
+  <rect x="114" y="224" width="44" height="44" rx="12" fill="#1D9DF2"/>
+  <rect x="176" y="230" width="200" height="16" rx="8" fill="#11314B"/>
+  <rect x="176" y="254" width="144" height="12" rx="6" fill="#7890A4"/>
+
+  <rect x="116" y="312" width="436" height="462" rx="22" fill="#FFFFFF"/>
+  <rect x="146" y="342" width="156" height="16" rx="8" fill="#11314B"/>
+  <rect x="146" y="376" width="376" height="14" rx="7" fill="#D6E5F0"/>
+  <rect x="138" y="426" width="392" height="88" rx="18" fill="#1D9DF2"/>
+  <rect x="172" y="454" width="146" height="18" rx="9" fill="#FFFFFF"/>
+  <rect x="172" y="484" width="206" height="14" rx="7" fill="#BDE7FF"/>
+  <rect x="138" y="534" width="392" height="88" rx="18" fill="#F8FBFD"/>
+  <rect x="172" y="562" width="182" height="18" rx="9" fill="#11314B"/>
+  <rect x="172" y="592" width="194" height="14" rx="7" fill="#7C92A6"/>
+  <rect x="138" y="642" width="392" height="88" rx="18" fill="#F8FBFD"/>
+  <rect x="172" y="670" width="154" height="18" rx="9" fill="#11314B"/>
+  <rect x="172" y="700" width="180" height="14" rx="7" fill="#7C92A6"/>
+
+  <rect x="586" y="312" width="896" height="160" rx="22" fill="#FFFFFF"/>
+  <rect x="624" y="346" width="132" height="16" rx="8" fill="#11314B"/>
+  <rect x="772" y="346" width="394" height="14" rx="7" fill="#D2E2EE"/>
+  <rect x="624" y="390" width="626" height="22" rx="11" fill="#EFF6FB"/>
+  <rect x="1272" y="334" width="172" height="48" rx="16" fill="#1D9DF2"/>
+
+  <rect x="586" y="500" width="896" height="272" rx="22" fill="#FFFFFF"/>
+  <rect x="620" y="532" width="210" height="18" rx="9" fill="#11314B"/>
+  <rect x="620" y="578" width="90" height="90" rx="18" fill="#E7F4FD"/>
+  <rect x="734" y="586" width="208" height="18" rx="9" fill="#11314B"/>
+  <rect x="734" y="618" width="290" height="14" rx="7" fill="#7B92A6"/>
+  <rect x="1096" y="584" width="170" height="18" rx="9" fill="#11314B"/>
+  <rect x="1292" y="584" width="118" height="18" rx="9" fill="#11314B"/>
+  <rect x="1096" y="618" width="184" height="14" rx="7" fill="#A3B8C9"/>
+  <rect x="1292" y="618" width="110" height="14" rx="7" fill="#A3B8C9"/>
+
+  <rect x="620" y="680" width="216" height="52" rx="16" fill="#1D9DF2"/>
+  <rect x="858" y="680" width="168" height="52" rx="16" fill="#EAF3FA"/>
+  <rect x="1044" y="680" width="208" height="52" rx="16" fill="#EAF3FA"/>
+
+  <text x="90" y="860" fill="#B9E5FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">Draft listing art based on the current desktop UI layout.</text>
+</svg>

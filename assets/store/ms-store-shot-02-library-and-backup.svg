@@ -1,0 +1,53 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="90" x2="1520" y2="850" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F4164"/>
+      <stop offset="1" stop-color="#1B2F49"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FCFEFF"/>
+      <stop offset="1" stop-color="#E7F3FD"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1420" cy="740" r="200" fill="#71D8FF" fill-opacity="0.08"/>
+  <circle cx="210" cy="150" r="180" fill="#62C8FF" fill-opacity="0.08"/>
+
+  <text x="90" y="104" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Screenshot 2</text>
+  <text x="90" y="154" fill="#D5EEFF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">Import, export, and back up from one focused workspace</text>
+
+  <rect x="76" y="206" width="1448" height="612" rx="28" fill="url(#card)"/>
+  <rect x="76" y="206" width="1448" height="78" rx="28" fill="#EEF6FD"/>
+  <rect x="112" y="232" width="48" height="48" rx="12" fill="#1D9DF2"/>
+  <rect x="178" y="238" width="258" height="16" rx="8" fill="#0F2A41"/>
+  <rect x="178" y="262" width="190" height="12" rx="6" fill="#7A90A3"/>
+
+  <rect x="112" y="320" width="1300" height="102" rx="22" fill="#FFFFFF"/>
+  <rect x="144" y="346" width="168" height="50" rx="16" fill="#1D9DF2"/>
+  <rect x="332" y="346" width="168" height="50" rx="16" fill="#EAF3FA"/>
+  <rect x="520" y="346" width="168" height="50" rx="16" fill="#EAF3FA"/>
+  <rect x="708" y="346" width="176" height="50" rx="16" fill="#EAF3FA"/>
+  <rect x="1100" y="344" width="270" height="16" rx="8" fill="#0F2A41"/>
+  <rect x="1100" y="372" width="224" height="14" rx="7" fill="#95AEC1"/>
+
+  <rect x="112" y="458" width="640" height="318" rx="24" fill="#FFFFFF"/>
+  <rect x="146" y="494" width="184" height="18" rx="9" fill="#0F2A41"/>
+  <rect x="146" y="536" width="268" height="14" rx="7" fill="#8AA2B6"/>
+  <rect x="146" y="584" width="572" height="54" rx="18" fill="#F2F7FB"/>
+  <rect x="146" y="656" width="572" height="54" rx="18" fill="#F2F7FB"/>
+  <rect x="146" y="728" width="214" height="50" rx="16" fill="#1D9DF2"/>
+  <rect x="382" y="728" width="182" height="50" rx="16" fill="#EAF3FA"/>
+
+  <rect x="784" y="458" width="640" height="318" rx="24" fill="#FFFFFF"/>
+  <rect x="818" y="494" width="196" height="18" rx="9" fill="#0F2A41"/>
+  <rect x="818" y="536" width="332" height="14" rx="7" fill="#8AA2B6"/>
+  <rect x="818" y="584" width="240" height="20" rx="10" fill="#0F2A41"/>
+  <rect x="1084" y="584" width="132" height="20" rx="10" fill="#0F2A41"/>
+  <rect x="818" y="620" width="522" height="18" rx="9" fill="#EAF3FA"/>
+  <rect x="818" y="656" width="522" height="18" rx="9" fill="#EAF3FA"/>
+  <rect x="818" y="692" width="522" height="18" rx="9" fill="#EAF3FA"/>
+  <rect x="818" y="728" width="198" height="50" rx="16" fill="#EAF3FA"/>
+
+  <text x="90" y="860" fill="#B9E5FF" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">Draft listing art highlighting library import and backup flows.</text>
+</svg>

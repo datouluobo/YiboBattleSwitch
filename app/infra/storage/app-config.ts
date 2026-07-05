@@ -1,6 +1,6 @@
-import { app } from "electron";
 import { AppSettings } from "../../shared/types/app.js";
 import { readJsonFile, writeJsonFile } from "../system/fs.js";
+import { applyLaunchAtLoginSettings } from "../../main/window/autostart.js";
 import { getAppPaths } from "./app-paths.js";
 
 const DEFAULT_WINDOW_BOUNDS = {
@@ -53,13 +53,13 @@ export async function updateSettings(patch: Partial<AppSettings>): Promise<AppSe
   cachedSettings = next;
 
   if (typeof patch.launchAtLogin === "boolean") {
-    app.setLoginItemSettings({
-      openAtLogin: patch.launchAtLogin,
+    applyLaunchAtLoginSettings({
+      enabled: patch.launchAtLogin,
       openAsHidden: next.minimizeOnLaunch
     });
   } else if (typeof patch.minimizeOnLaunch === "boolean") {
-    app.setLoginItemSettings({
-      openAtLogin: next.launchAtLogin,
+    applyLaunchAtLoginSettings({
+      enabled: next.launchAtLogin,
       openAsHidden: patch.minimizeOnLaunch
     });
   }

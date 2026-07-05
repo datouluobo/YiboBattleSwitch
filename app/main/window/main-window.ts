@@ -2,6 +2,7 @@ import { BrowserWindow, app, shell } from "electron";
 import { getCachedSettings, getSettings, updateSettings } from "../../infra/storage/app-config.js";
 import { logger } from "../../infra/system/logger.js";
 import { resolveAppPath } from "../bootstrap/paths.js";
+import { isAllowedExternalUrl } from "../../shared/constants/app.js";
 
 let mainWindow: BrowserWindow | null = null;
 let startHiddenOnLaunch = false;
@@ -58,6 +59,10 @@ export async function createMainWindow(): Promise<BrowserWindow> {
   await logger.info(`Renderer ready: ${diagnostics}`);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (!isAllowedExternalUrl(url)) {
+      void logger.error(`Blocked window.open external URL: ${url}`);
+      return { action: "deny" };
+    }
     void shell.openExternal(url);
     return { action: "deny" };
   });

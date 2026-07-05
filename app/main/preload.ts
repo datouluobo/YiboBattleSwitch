@@ -14,7 +14,6 @@ const api = {
   importLibrary: (sourcePath: string) => ipcRenderer.invoke(IPC_CHANNELS.IMPORT_LIBRARY, { path: sourcePath }),
   backupCurrentState: () => ipcRenderer.invoke(IPC_CHANNELS.BACKUP_CURRENT_STATE),
   restoreLatestBackup: () => ipcRenderer.invoke(IPC_CHANNELS.RESTORE_LATEST_BACKUP),
-  importFromNewBeeBox: () => ipcRenderer.invoke(IPC_CHANNELS.IMPORT_FROM_NEWBEEBOX),
   openDirectory: (targetPath: string) => ipcRenderer.invoke(IPC_CHANNELS.OPEN_DIRECTORY, targetPath),
   openExternal: (targetUrl: string) => ipcRenderer.invoke(IPC_CHANNELS.OPEN_EXTERNAL, targetUrl),
   getWindowState: () => ipcRenderer.invoke(IPC_CHANNELS.WINDOW_GET_STATE),
