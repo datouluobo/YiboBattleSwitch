@@ -27,7 +27,7 @@ Its product boundary is:
 
 ## Current Status
 
-Current version: `v0.4.3`
+Current version: `v0.5.0`
 
 Implemented in the current desktop build:
 
@@ -98,6 +98,11 @@ Store copy, screenshot captions, cleanup plan, and promotional image masters are
 - [`docs/PRIVACY.md`](/E:/Program/YiboBattleSwitch/docs/PRIVACY.md)
 - [`docs/法律与发布风险审查.md`](/E:/Program/YiboBattleSwitch/docs/法律与发布风险审查.md)
 - [`assets/store/README.md`](/E:/Program/YiboBattleSwitch/assets/store/README.md)
+
+## License and third-party notices
+
+Project-owned source code is licensed under the [MIT License](LICENSE).
+Release packages include the project license and [third-party notices](THIRD-PARTY-NOTICES.txt), including the notices supplied with Electron and Chromium.
 
 ## Repository Notes
 

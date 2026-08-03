@@ -1,0 +1,32 @@
+YiboBattleSwitch — Third-Party Notices
+Generated: 2026-08-02
+
+This file identifies third-party runtime software known to be included in
+YiboBattleSwitch 0.5.0 release packages. It does not grant rights in
+YiboBattleSwitch project code.
+
+Electron 37.10.3
+Copyright (c) Electron contributors and GitHub Inc.
+License: MIT
+The Electron license text is included in the release package as
+LICENSE.electron.txt.
+
+Chromium and Chromium runtime components
+Copyright notices and license information are included in the release package
+as LICENSES.chromium.html.
+
+@noble/hashes 1.8.0
+Copyright (c) Paul Miller
+License: MIT
+Used at runtime for Argon2id password key derivation of manually exported
+account libraries.
+
+Build-only dependencies
+TypeScript 5.9.3, Tailwind CSS 3.4.19, electron-builder 24.13.3, and their
+transitive npm dependencies are used to build the application. They are not
+included in the inspected 0.5.0 app.asar release payload, except where a
+component is incorporated into the Electron runtime notices above.
+
+Excluded local material
+The local vendor/nbb-core directory is not tracked by Git and is not included
+in the inspected 0.5.0 APPX/MSIX payload. It is not covered by this notice.

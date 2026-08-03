@@ -1,6 +1,6 @@
 {
   "name": "yibo-battle-switch",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "Independent Electron Battle.net account switcher rebuild",
   "main": "dist/main/main/bootstrap/app.js",
   "author": "YiboSoft",
@@ -36,6 +36,8 @@
       "dist/**/*",
       "app/renderer/index.html",
       "logo.png",
+      "LICENSE",
+      "THIRD-PARTY-NOTICES.txt",
       "assets/icons/**/*",
       "assets/plugins/**/*",
       "package.json"
@@ -67,5 +69,8 @@
       "createStartMenuShortcut": true,
       "artifactName": "${productName}-Setup-${version}.${ext}"
     }
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.8.0"
   }
 }

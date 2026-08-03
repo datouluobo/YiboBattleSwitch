@@ -33,8 +33,9 @@ export interface DesktopApi {
   saveCurrentAccount: (payload: { battleTag: string; email: string; phone: string; description: string }) => Promise<RendererOperationResult>;
   updateAccountNote: (id: string, description: string) => Promise<RendererOperationResult>;
   deleteAccount: (id: string) => Promise<RendererOperationResult>;
-  backupLibrary: (targetPath: string) => Promise<RendererOperationResult>;
-  importLibrary: (sourcePath: string) => Promise<RendererOperationResult>;
+  backupLibrary: (targetPath: string, password: string) => Promise<RendererOperationResult>;
+  importLibrary: (sourcePath: string, password?: string) => Promise<RendererOperationResult>;
+  createAutoBackup: () => Promise<RendererOperationResult>;
   backupCurrentState: () => Promise<RendererOperationResult>;
   restoreLatestBackup: () => Promise<RendererOperationResult>;
   openDirectory: (targetPath: string) => Promise<unknown>;

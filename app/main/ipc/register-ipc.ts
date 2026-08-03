@@ -7,7 +7,7 @@ import { switchAccount } from "../../domain/account-switch/switch-account.js";
 import { createBackup } from "../../domain/backup/create-backup.js";
 import { restoreLatestBackup } from "../../domain/backup/restore-latest-backup.js";
 import { launchBattleNet } from "../../infra/battlenet/battlenet-launcher.js";
-import { backupAccountLibrary, importAccountLibrary } from "../../infra/storage/library-transfer.js";
+import { backupAccountLibrary, createAutomaticDpapiBackup, importAccountLibrary } from "../../infra/storage/library-transfer.js";
 import { deleteAccount, listAccounts, readAccountSnapshot, reorderAccounts, updateAccountDescription } from "../../infra/storage/account-library.js";
 import { getSettings, updateSettings } from "../../infra/storage/app-config.js";
 import { getAppPaths } from "../../infra/storage/app-paths.js";
@@ -302,19 +302,28 @@ export function registerIpc(): void {
     return result;
   });
 
-  ipcMain.handle(IPC_CHANNELS.BACKUP_LIBRARY, async (_event, payload: { path: string }) => {
-    const archivePath = await backupAccountLibrary(payload.path || getAppPaths().userDataDir);
+  ipcMain.handle(IPC_CHANNELS.BACKUP_LIBRARY, async (_event, payload: { path: string; password: string }) => {
+    const archivePath = await backupAccountLibrary(payload.path || getAppPaths().userDataDir, payload.password || "");
     const result = { ok: true, message: `账号库已导出：${archivePath}` };
     await logger.info(result.message);
     return result;
   });
 
-  ipcMain.handle(IPC_CHANNELS.IMPORT_LIBRARY, async (_event, payload: { path: string }) => {
-    const summary = await importAccountLibrary(payload.path);
+  ipcMain.handle(IPC_CHANNELS.IMPORT_LIBRARY, async (_event, payload: { path: string; password?: string }) => {
+    const summary = await importAccountLibrary(payload.path, payload.password || "");
     const result = { ok: true, message: `账号库已导入。新增 ${summary.imported}，更新 ${summary.updated}` };
     await refreshTrayMenu();
     await logger.info(result.message);
     return result;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.CREATE_AUTO_BACKUP, async () => {
+    const settings = await getSettings();
+    if (!settings.autoBackupEnabled) {
+      return { ok: true, message: "自动备份已关闭。" };
+    }
+    const archivePath = await createAutomaticDpapiBackup(settings.autoBackupDirectory);
+    return { ok: true, message: `自动备份已创建：${archivePath}` };
   });
 
   ipcMain.handle(IPC_CHANNELS.CLEAR_LOGS, async () => {

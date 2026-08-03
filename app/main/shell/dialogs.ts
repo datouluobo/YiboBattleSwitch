@@ -12,10 +12,12 @@ export async function selectDirectory(browserWindow: BrowserWindow, defaultPath 
 
 export async function selectImportSource(browserWindow: BrowserWindow, defaultPath = ""): Promise<string> {
   const result = await dialog.showOpenDialog(browserWindow, {
-    title: "选择账号库目录或备份文件",
-    properties: ["openDirectory", "openFile"],
+    title: "选择账号库备份文件",
+    properties: ["openFile"],
     filters: [
-      { name: "Zip Archives", extensions: ["zip"] },
+      { name: "YiboBattleSwitch Encrypted Backup", extensions: ["ybsx"] },
+      { name: "YiboBattleSwitch DPAPI Backup", extensions: ["ybs-dpapi"] },
+      { name: "Legacy Zip Archives", extensions: ["zip"] },
       { name: "All Files", extensions: ["*"] }
     ],
     defaultPath: defaultPath || undefined

@@ -7,6 +7,7 @@ import { readJsonFile } from "../system/fs.js";
 import { BattleNetSnapshot } from "../../shared/types/app.js";
 import { execPowerShell } from "../battlenet/command.js";
 import { convertLegacyUnifiedAuth } from "../battlenet/battlenet-registry.js";
+import { decryptFileWithPassword, encryptFileWithPassword, protectFileWithDpapi, unprotectFileWithDpapi } from "../security/data-protection.js";
 
 interface ImportSummary {
   imported: number;
@@ -130,7 +131,7 @@ async function readExternalAccount(folderPath: string): Promise<{ battleTag: str
   };
 }
 
-export async function backupAccountLibrary(outputDir: string): Promise<string> {
+async function createLibraryZip(outputDir: string): Promise<string> {
   await fs.mkdir(outputDir, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const archivePath = path.join(outputDir, `YiboBattleSwitch-account-library-backup-${timestamp}.zip`);
@@ -139,14 +140,45 @@ export async function backupAccountLibrary(outputDir: string): Promise<string> {
   return archivePath;
 }
 
-export async function importAccountLibrary(sourcePath: string): Promise<ImportSummary> {
+export async function backupAccountLibrary(outputDir: string, password: string): Promise<string> {
+  const zipPath = await createLibraryZip(outputDir);
+  const encryptedPath = zipPath.replace(/\.zip$/i, ".ybsx");
+  try {
+    await encryptFileWithPassword(zipPath, encryptedPath, password);
+    return encryptedPath;
+  } finally {
+    await fs.rm(zipPath, { force: true }).catch(() => undefined);
+  }
+}
+
+export async function createAutomaticDpapiBackup(outputDir: string): Promise<string> {
+  const zipPath = await createLibraryZip(outputDir);
+  const protectedPath = zipPath.replace(/\.zip$/i, ".ybs-dpapi");
+  try {
+    await protectFileWithDpapi(zipPath, protectedPath);
+    return protectedPath;
+  } finally {
+    await fs.rm(zipPath, { force: true }).catch(() => undefined);
+  }
+}
+
+export async function importAccountLibrary(sourcePath: string, password = ""): Promise<ImportSummary> {
   let workingRoot = sourcePath;
   let tempRoot = "";
 
   const stat = await fs.stat(sourcePath);
-  if (stat.isFile() && sourcePath.toLowerCase().endsWith(".zip")) {
+  if (stat.isFile() && [".zip", ".ybsx", ".ybs-dpapi"].some((extension) => sourcePath.toLowerCase().endsWith(extension))) {
     tempRoot = path.join(os.tmpdir(), "YiboBattleSwitch", `import-${Date.now()}`);
-    await extractZipToDirectory(sourcePath, tempRoot);
+    const decryptedZip = path.join(os.tmpdir(), "YiboBattleSwitch", `import-${Date.now()}.zip`);
+    if (sourcePath.toLowerCase().endsWith(".ybs-dpapi")) {
+      await unprotectFileWithDpapi(sourcePath, decryptedZip);
+    } else if (sourcePath.toLowerCase().endsWith(".ybsx")) {
+      await decryptFileWithPassword(sourcePath, decryptedZip, password);
+    } else {
+      await fs.copyFile(sourcePath, decryptedZip);
+    }
+    await extractZipToDirectory(decryptedZip, tempRoot);
+    await fs.rm(decryptedZip, { force: true }).catch(() => undefined);
     workingRoot = tempRoot;
   }
 

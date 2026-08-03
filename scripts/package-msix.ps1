@@ -1,9 +1,11 @@
 param(
   [string]$IdentityName = "YiboSoft.YiboBattleSwitch",
   [string]$ApplicationId = "YiboBattleSwitch",
-  [string]$Publisher = "CN=YiboSoft",
+  [string]$Publisher = "CN=7919EC65-9786-42C0-8811-15FD14EECFE0",
   [string]$PublisherDisplayName = "YiboSoft",
-  [string]$DisplayName = "YiboBattleSwitch"
+  [string]$DisplayName = "YiboBattleSwitch",
+  [string]$TargetMinVersion = "10.0.17763.0",
+  [string]$TargetMaxVersionTested = "10.0.17763.0"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -57,6 +59,36 @@ function Resolve-MakeAppxPath {
   throw 'makeappx.exe was not found. Install the Windows 10/11 SDK first.'
 }
 
+function Update-AppxManifestTargetVersions {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$ManifestPath,
+    [Parameter(Mandatory = $true)]
+    [string]$MinVersion,
+    [Parameter(Mandatory = $true)]
+    [string]$MaxVersionTested
+  )
+
+  [xml]$manifestXml = Get-Content -LiteralPath $ManifestPath
+  $packageNode = $manifestXml.Package
+  if (-not $packageNode) {
+    throw "Appx manifest does not contain a Package node: $ManifestPath"
+  }
+
+  $namespaceUri = $packageNode.NamespaceURI
+  $namespaceManager = New-Object System.Xml.XmlNamespaceManager($manifestXml.NameTable)
+  $namespaceManager.AddNamespace('appx', $namespaceUri)
+
+  $targetDeviceFamilyNode = $manifestXml.SelectSingleNode('//appx:Package/appx:Dependencies/appx:TargetDeviceFamily', $namespaceManager)
+  if (-not $targetDeviceFamilyNode) {
+    throw "Appx manifest does not contain a TargetDeviceFamily node: $ManifestPath"
+  }
+
+  $targetDeviceFamilyNode.SetAttribute('MinVersion', $MinVersion)
+  $targetDeviceFamilyNode.SetAttribute('MaxVersionTested', $MaxVersionTested)
+  $manifestXml.Save($ManifestPath)
+}
+
 Push-Location $projectRoot
 try {
   if (Test-Path -LiteralPath $tempOutput) {
@@ -105,6 +137,12 @@ try {
   if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
   }
+
+  $manifestPath = Join-Path $unpackDir 'AppxManifest.xml'
+  if (-not (Test-Path -LiteralPath $manifestPath)) {
+    throw "AppxManifest.xml was not found after unpack: $manifestPath"
+  }
+  Update-AppxManifestTargetVersions -ManifestPath $manifestPath -MinVersion $TargetMinVersion -MaxVersionTested $TargetMaxVersionTested
 
   & $makeappx pack /o /h SHA256 /d $unpackDir /p $msixTempPath
   if ($LASTEXITCODE -ne 0) {

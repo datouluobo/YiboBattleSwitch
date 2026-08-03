@@ -47,6 +47,9 @@ export interface AppSettings {
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
   skipSwitchConfirm: boolean;
+  acknowledgedSensitiveDataRisk: boolean;
+  autoBackupEnabled: boolean;
+  autoBackupDirectory: string;
   revealedAccountIds?: string[];
   lastSelectedAccountId: string;
   windowBounds?: {

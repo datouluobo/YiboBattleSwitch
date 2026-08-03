@@ -17,7 +17,7 @@
             <div>
               <div class="flex items-center gap-3">
                 <span class="text-[17px] font-bold text-primary" id="wordmark">YiboBattleSwitch</span>
-                <span class="text-[13px] text-slate-400" id="versionLabel">v0.4.3</span>
+                <span class="text-[13px] text-slate-400" id="versionLabel">v0.5.0</span>
                 <span class="text-[13px] text-slate-300">/</span>
                 <span class="text-[18px] font-semibold text-ink" id="appTitleInline">暴雪战网 Battle.net 切换工具</span>
               </div>
@@ -176,6 +176,18 @@
                 </div>
                 <input class="setting-toggle" id="skipSwitchConfirmToggle" type="checkbox">
               </label>
+              <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div>
+                  <div class="text-[15px] font-semibold text-ink">自动备份</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">保存或切换成功后，用当前 Windows 用户 DPAPI 加密备份。</div>
+                </div>
+                <input class="setting-toggle" id="autoBackupToggle" type="checkbox">
+              </label>
+            </div>
+            <div class="mt-4 flex items-center gap-3 rounded-[12px] border border-stroke bg-surface-soft p-4">
+              <div class="min-w-[88px] text-[15px] font-semibold text-ink">自动备份目录</div>
+              <input class="mono min-w-0 flex-1 rounded-[8px] border border-stroke bg-surface px-3 py-2 text-[13px] text-ink outline-none" id="autoBackupDirField" type="text">
+              <button class="rounded-[8px] border border-stroke bg-surface px-3 py-2 text-[13px] font-semibold text-ink" id="pickAutoBackupDirBtn" type="button">选择目录</button>
             </div>
           </section>
 
@@ -221,7 +233,7 @@
 
       <footer class="flex-none border-t border-stroke px-8 py-4">
         <div class="flex flex-wrap items-center justify-between gap-4 text-[14px]">
-          <div class="text-slate-400">© 2026 YiboSoft. All rights reserved.</div>
+          <div class="text-slate-400">© 2026 YiboSoft · MIT License</div>
           <div class="flex flex-wrap items-center gap-2">
             <span class="mr-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-400">More WoW</span>
             <a class="plugin-chip" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" data-tooltip="项目主页与源码仓库" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">
@@ -295,7 +307,8 @@
           <a class="mt-2 inline-flex text-[14px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch" href="https://github.com/datouluobo/YiboBattleSwitch" rel="noreferrer" target="_blank">GitHub: datouluobo/YiboBattleSwitch</a>
           <div class="mt-3 flex flex-wrap gap-3">
             <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/EULA.md" href="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/EULA.md" rel="noreferrer" target="_blank">最终用户许可协议</a>
-            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/PRIVACY.md" href="https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/PRIVACY.md" rel="noreferrer" target="_blank">隐私政策</a>
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://github.com/datouluobo/YiboBattleSwitch/blob/main/THIRD-PARTY-NOTICES.txt" href="https://github.com/datouluobo/YiboBattleSwitch/blob/main/THIRD-PARTY-NOTICES.txt" rel="noreferrer" target="_blank">第三方声明</a>
+            <a class="text-[13px] text-primary hover:underline" data-external-url="https://gist.github.com/datouluobo/822ce73cef378c7235c48d6c8b265fa5" href="https://gist.github.com/datouluobo/822ce73cef378c7235c48d6c8b265fa5" rel="noreferrer" target="_blank">隐私政策</a>
           </div>
           <div class="mt-4 text-[13px] font-semibold text-ink">其它 WoW 项目</div>
           <div class="mt-2 flex flex-wrap gap-3">

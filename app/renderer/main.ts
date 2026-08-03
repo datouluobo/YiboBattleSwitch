@@ -47,6 +47,9 @@ interface AppSettings {
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
   skipSwitchConfirm: boolean;
+  acknowledgedSensitiveDataRisk: boolean;
+  autoBackupEnabled: boolean;
+  autoBackupDirectory: string;
   revealedAccountIds?: string[];
   lastSelectedAccountId: string;
 }
@@ -165,6 +168,28 @@ function askConfirm(title: string, message: string, option?: ConfirmDialogOption
   return new Promise((resolve) => {
     state.confirmResolve = resolve;
   });
+}
+
+async function ensureSensitiveDataRiskAcknowledged(): Promise<boolean> {
+  if (state.settings?.acknowledgedSensitiveDataRisk) {
+    return true;
+  }
+  const result = await askConfirm(
+    "本地登录状态操作提示",
+    "本工具会读取、保存、导入、导出或恢复本机 Battle.net 的本地配置、登录状态及相关缓存。它不是 Blizzard 官方功能，可能导致重新验证、登录异常或账号限制。请确认你理解风险，并已完成必要备份。"
+  );
+  if (!result.confirmed) {
+    return false;
+  }
+  const updatedSettings = await runAction(
+    () => window.api.updateSettings({ acknowledgedSensitiveDataRisk: true }),
+    "保存确认状态失败"
+  );
+  if (!updatedSettings) {
+    return false;
+  }
+  state.settings = updatedSettings as AppSettings;
+  return true;
 }
 
 function askForm(config: { title: string; hint?: string; submitText?: string; fields: FormField[] }): Promise<Record<string, string> | null> {
@@ -399,6 +424,8 @@ function renderDebug(payload: AppStateDto, settings: AppSettings | null): void {
     <div>注册表摘要：${escapeHtml(payload.currentGameAccount)}</div>
     <div>附加信息：${escapeHtml(wowAccounts)}</div>
     <div>当前切换方案：${escapeHtml(SWITCH_PROFILE_LABELS[switchProfile])}</div>
+    <div>自动备份：${settings?.autoBackupEnabled ? "已开启（DPAPI）" : "已关闭"}</div>
+    <div>自动备份目录：${escapeHtml(settings?.autoBackupDirectory || "-")}</div>
     <div>账号库数量：${payload.accountCount}</div>
     <div>当前权限：${escapeHtml(payload.permissionLabel)}</div>
   `;
@@ -480,6 +507,8 @@ function applyState(payload: AppStateDto, settings?: AppSettings): void {
     (document.getElementById("launchAtLoginToggle") as HTMLInputElement).checked = state.settings.launchAtLogin;
     (document.getElementById("minimizeOnLaunchToggle") as HTMLInputElement).checked = state.settings.minimizeOnLaunch;
     (document.getElementById("skipSwitchConfirmToggle") as HTMLInputElement).checked = state.settings.skipSwitchConfirm;
+    (document.getElementById("autoBackupToggle") as HTMLInputElement).checked = state.settings.autoBackupEnabled;
+    (document.getElementById("autoBackupDirField") as HTMLInputElement).value = state.settings.autoBackupDirectory;
   }
   renderRows(payload.accounts);
   renderDebug(payload, state.settings);
@@ -526,6 +555,9 @@ function bindStaticActions(): void {
       await showMessage("请先选择一个账号。");
       return;
     }
+    if (!(await ensureSensitiveDataRiskAcknowledged())) {
+      return;
+    }
     const target = state.payload.accounts.find((item) => item.id === state.selectedAccountId);
     if (!state.settings?.skipSwitchConfirm) {
       const confirmResult = await askConfirm(
@@ -547,6 +579,9 @@ function bindStaticActions(): void {
     const result = await runAction(() => window.api.switchAccount(state.selectedAccountId), "切换失败");
     if (result) {
       await handleResult(result, "切换失败");
+      if (result.ok) {
+        await runAction(() => window.api.createAutoBackup(), "自动备份失败");
+      }
       if (!result.ok && (result.failureReason === "AccessDenied" || result.failureReason === "StillClosing" || result.failureReason === "Respawned")) {
         const retry = await askConfirm("手动退出后重试", "请先在 Battle.net 中完全退出战网和 Agent。完成后点“确认”，我会立即再重试一次切换。");
         if (retry.confirmed) {
@@ -562,6 +597,9 @@ function bindStaticActions(): void {
   (document.getElementById("saveBtn") as HTMLButtonElement).addEventListener("click", async () => {
     clearNotice();
     await refreshState();
+    if (!(await ensureSensitiveDataRiskAcknowledged())) {
+      return;
+    }
     const loginCandidates = state.payload?.currentSavedAccountCandidates || [];
     const currentBattleTag = state.payload?.currentBattleTag || "";
     const uniqueLoginCandidates = Array.from(new Set(loginCandidates.map((item) => item.trim()).filter(Boolean)));
@@ -613,21 +651,46 @@ function bindStaticActions(): void {
     }), "保存失败");
     if (actionResult) {
       await handleResult(actionResult, "保存失败");
+      if (actionResult.ok) {
+        await runAction(() => window.api.createAutoBackup(), "自动备份失败");
+      }
     }
   });
 
   (document.getElementById("backupBtn") as HTMLButtonElement).addEventListener("click", async () => {
+    if (!(await ensureSensitiveDataRiskAcknowledged())) {
+      return;
+    }
     const selectedPath = await runAction(() => window.api.selectDirectory(state.payload?.libraryDirectory || ""), "选择目录失败");
     if (selectedPath === null) {
       return;
     }
-    const result = await runAction(() => window.api.backupLibrary(selectedPath || ""), "导出失败");
+    const passwordForm = await askForm({
+      title: "加密导出账号库",
+      hint: "导出文件会使用 Argon2id 和 AES-256-GCM 加密。密码至少 12 个字符，忘记后无法恢复。",
+      submitText: "加密导出",
+      fields: [
+        { name: "password", label: "导出密码", type: "password" },
+        { name: "confirmPassword", label: "确认密码", type: "password" }
+      ]
+    });
+    if (!passwordForm) {
+      return;
+    }
+    if (passwordForm.password !== passwordForm.confirmPassword) {
+      await showMessage("两次输入的密码不一致。", "导出失败");
+      return;
+    }
+    const result = await runAction(() => window.api.backupLibrary(selectedPath || "", passwordForm.password || ""), "导出失败");
     if (result) {
       await handleResult(result, "导出失败");
     }
   });
 
   (document.getElementById("importBtn") as HTMLButtonElement).addEventListener("click", async () => {
+    if (!(await ensureSensitiveDataRiskAcknowledged())) {
+      return;
+    }
     const selectedPath = await runAction(() => window.api.selectImportSource(state.payload?.dataDirectory || ""), "选择导入源失败");
     if (selectedPath === null) {
       return;
@@ -635,7 +698,20 @@ function bindStaticActions(): void {
     if (!selectedPath) {
       return;
     }
-    const result = await runAction(() => window.api.importLibrary(selectedPath), "导入失败");
+    let password = "";
+    if (selectedPath.toLowerCase().endsWith(".ybsx")) {
+      const passwordForm = await askForm({
+        title: "导入加密账号库",
+        hint: "请输入创建该导出文件时设置的密码。",
+        submitText: "解密并导入",
+        fields: [{ name: "password", label: "导出密码", type: "password" }]
+      });
+      if (!passwordForm) {
+        return;
+      }
+      password = passwordForm.password || "";
+    }
+    const result = await runAction(() => window.api.importLibrary(selectedPath, password), "导入失败");
     if (result) {
       await handleResult(result, "导入失败");
     }
@@ -840,6 +916,19 @@ function bindStaticActions(): void {
       return;
     }
     await refreshState();
+  });
+
+  (document.getElementById("autoBackupToggle") as HTMLInputElement).addEventListener("change", async (event) => {
+    const result = await runAction(() => window.api.updateSettings({ autoBackupEnabled: (event.currentTarget as HTMLInputElement).checked }), "设置失败");
+    if (result) await refreshState();
+  });
+
+  (document.getElementById("pickAutoBackupDirBtn") as HTMLButtonElement).addEventListener("click", async () => {
+    const current = (document.getElementById("autoBackupDirField") as HTMLInputElement).value;
+    const selected = await runAction(() => window.api.selectDirectory(current), "选择目录失败");
+    if (!selected) return;
+    const result = await runAction(() => window.api.updateSettings({ autoBackupDirectory: selected }), "设置失败");
+    if (result) await refreshState();
   });
 
   (document.getElementById("settingsLink") as HTMLButtonElement).addEventListener("click", () => toggleSection("settingsSection"));

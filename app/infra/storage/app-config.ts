@@ -2,6 +2,7 @@ import { AppSettings } from "../../shared/types/app.js";
 import { readJsonFile, writeJsonFile } from "../system/fs.js";
 import { applyLaunchAtLoginSettings } from "../../main/window/autostart.js";
 import { getAppPaths } from "./app-paths.js";
+import { app } from "electron";
 
 const DEFAULT_WINDOW_BOUNDS = {
   width: 1440,
@@ -17,6 +18,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   launchAtLogin: false,
   minimizeOnLaunch: false,
   skipSwitchConfirm: false,
+  acknowledgedSensitiveDataRisk: false,
+  autoBackupEnabled: true,
+  autoBackupDirectory: "",
   revealedAccountIds: [],
   lastSelectedAccountId: "",
   windowBounds: DEFAULT_WINDOW_BOUNDS
@@ -35,6 +39,7 @@ export async function getSettings(): Promise<AppSettings> {
     ...stored,
     battleNetSwitchProfile: normalizedSwitchProfile,
     revealedAccountIds: Array.isArray(stored.revealedAccountIds) ? stored.revealedAccountIds : [],
+    autoBackupDirectory: stored.autoBackupDirectory?.trim() || app.getPath("downloads"),
     windowBounds: {
       width: stored.windowBounds?.width ?? DEFAULT_WINDOW_BOUNDS.width,
       height: stored.windowBounds?.height ?? DEFAULT_WINDOW_BOUNDS.height
