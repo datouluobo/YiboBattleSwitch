@@ -27,7 +27,7 @@ Its product boundary is:
 
 ## Current Status
 
-Current version: `v0.5.0`
+Current version: `v0.5.1`
 
 Implemented in the current desktop build:
 

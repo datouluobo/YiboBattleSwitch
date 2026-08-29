@@ -1,21 +1,31 @@
 export const APP_NAME = "YiboBattleSwitch";
-export const APP_VERSION = "0.5.0";
+export const APP_VERSION = "0.5.1";
 export const APP_REPOSITORY_URL = "https://github.com/datouluobo/YiboBattleSwitch";
 export const APP_EULA_URL = "https://github.com/datouluobo/YiboBattleSwitch/blob/main/docs/EULA.md";
 export const APP_THIRD_PARTY_NOTICES_URL = "https://github.com/datouluobo/YiboBattleSwitch/blob/main/THIRD-PARTY-NOTICES.txt";
 export const APP_PRIVACY_POLICY_URL = "https://gist.github.com/datouluobo/822ce73cef378c7235c48d6c8b265fa5";
-export const APP_PLUGIN_ALTO_BOSS_URL = "https://github.com/datouluobo/YiboAltoBoss";
+export const APP_PLUGIN_CORE_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboCore";
 export const APP_PLUGIN_BEAST_PATHS_URL = "https://github.com/datouluobo/YiboBeastPaths";
-export const APP_PLUGIN_QUEST_BLOCKER_URL = "https://github.com/datouluobo/YiboQuestBlocker";
+export const APP_PLUGIN_ALTO_BOSS_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboAltoBoss";
+export const APP_PLUGIN_CURRENCY_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboCurrency";
+export const APP_PLUGIN_LEGENDARY_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboLegendary";
+export const APP_PLUGIN_QUEST_BLOCKER_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboQuestBlocker";
+export const APP_PLUGIN_REPUTATION_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboReputation";
+export const APP_PLUGIN_TODO_URL = "https://github.com/datouluobo/YiboWow/tree/main/YiboTodo";
 
 export const ALLOWED_EXTERNAL_URLS = [
   APP_REPOSITORY_URL,
   APP_EULA_URL,
   APP_THIRD_PARTY_NOTICES_URL,
   APP_PRIVACY_POLICY_URL,
+  APP_PLUGIN_CORE_URL,
   APP_PLUGIN_ALTO_BOSS_URL,
   APP_PLUGIN_BEAST_PATHS_URL,
-  APP_PLUGIN_QUEST_BLOCKER_URL
+  APP_PLUGIN_CURRENCY_URL,
+  APP_PLUGIN_LEGENDARY_URL,
+  APP_PLUGIN_QUEST_BLOCKER_URL,
+  APP_PLUGIN_REPUTATION_URL,
+  APP_PLUGIN_TODO_URL
 ] as const;
 
 export function isAllowedExternalUrl(targetUrl: string): boolean {

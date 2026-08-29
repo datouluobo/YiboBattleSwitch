@@ -154,6 +154,16 @@
     display: block;
   }
 
+  .plugin-chip--compact {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.8125rem;
+  }
+
+  .plugin-chip--compact .plugin-chip__icon {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
   .plugin-tooltip {
     position: fixed;
     z-index: 60;
