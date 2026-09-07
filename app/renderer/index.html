@@ -179,9 +179,16 @@
               <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
                 <div>
                   <div class="text-[15px] font-semibold text-ink">自动备份</div>
-                  <div class="mt-1 text-[12px] text-ink-soft">保存或切换成功后，用当前 Windows 用户 DPAPI 加密备份。</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">保存或标准切换成功后，用当前 Windows 用户 DPAPI 加密备份。</div>
                 </div>
                 <input class="setting-toggle" id="autoBackupToggle" type="checkbox">
+              </label>
+              <label class="flex items-center justify-between rounded-[12px] border border-stroke bg-surface-soft p-4">
+                <div class="pr-4">
+                  <div class="text-[15px] font-semibold text-ink">并行启动（实验）</div>
+                  <div class="mt-1 text-[12px] text-ink-soft">同步战网官方多进程开关；切换账号时不主动关闭已打开的战网。</div>
+                </div>
+                <input class="setting-toggle" id="battleNetParallelLaunchToggle" type="checkbox">
               </label>
             </div>
             <div class="mt-4 flex items-center gap-3 rounded-[12px] border border-stroke bg-surface-soft p-4">

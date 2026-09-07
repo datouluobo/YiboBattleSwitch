@@ -31,6 +31,7 @@ interface AppStateDto {
   currentAccountId?: string;
   currentLocalFileCount?: number;
   currentBrowserCacheFileCount?: number;
+  battleNetMultiProcessEnabled: boolean;
   wowAccounts: string[];
   accountCount: number;
   permissionLabel: string;
@@ -47,6 +48,7 @@ interface AppSettings {
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
   skipSwitchConfirm: boolean;
+  battleNetParallelLaunchEnabled: boolean;
   acknowledgedSensitiveDataRisk: boolean;
   autoBackupEnabled: boolean;
   autoBackupDirectory: string;
@@ -428,6 +430,8 @@ function renderDebug(payload: AppStateDto, settings: AppSettings | null): void {
     <div>自动备份目录：${escapeHtml(settings?.autoBackupDirectory || "-")}</div>
     <div>账号库数量：${payload.accountCount}</div>
     <div>当前权限：${escapeHtml(payload.permissionLabel)}</div>
+    <div>启动模式：${settings?.battleNetParallelLaunchEnabled ? "并行启动（实验）" : "标准切换"}</div>
+    <div>战网多进程：${payload.battleNetMultiProcessEnabled ? "已允许" : "未允许"}</div>
   `;
   (document.getElementById("debugDirs") as HTMLDivElement).innerHTML = `
     <div>游戏目录：${escapeHtml(payload.gameDirectory || "-")}</div>
@@ -507,6 +511,7 @@ function applyState(payload: AppStateDto, settings?: AppSettings): void {
     (document.getElementById("launchAtLoginToggle") as HTMLInputElement).checked = state.settings.launchAtLogin;
     (document.getElementById("minimizeOnLaunchToggle") as HTMLInputElement).checked = state.settings.minimizeOnLaunch;
     (document.getElementById("skipSwitchConfirmToggle") as HTMLInputElement).checked = state.settings.skipSwitchConfirm;
+    (document.getElementById("battleNetParallelLaunchToggle") as HTMLInputElement).checked = state.settings.battleNetParallelLaunchEnabled;
     (document.getElementById("autoBackupToggle") as HTMLInputElement).checked = state.settings.autoBackupEnabled;
     (document.getElementById("autoBackupDirField") as HTMLInputElement).value = state.settings.autoBackupDirectory;
   }
@@ -562,7 +567,9 @@ function bindStaticActions(): void {
     if (!state.settings?.skipSwitchConfirm) {
       const confirmResult = await askConfirm(
         "确认切换",
-        `确认切换到 ${target ? getAccountDisplayName(target) : state.selectedAccountId} 吗？\n\n程序会先备份当前状态，再关闭 Battle.net / Agent，恢复目标账号并重新启动 Battle.net。`,
+        state.settings?.battleNetParallelLaunchEnabled
+          ? `确认并行启动 ${target ? getAccountDisplayName(target) : state.selectedAccountId} 吗？\n\n程序不会主动关闭已打开的 Battle.net，只更新共享账号指向并再启动一个战网。多个战网仍会共用本机配置和缓存，该功能目前处于实验阶段。`
+          : `确认切换到 ${target ? getAccountDisplayName(target) : state.selectedAccountId} 吗？\n\n程序会先备份当前状态，再关闭 Battle.net / Agent，恢复目标账号并重新启动 Battle.net。`,
         { label: "以后直接切换，不再确认" }
       );
       if (!confirmResult.confirmed) {
@@ -579,7 +586,7 @@ function bindStaticActions(): void {
     const result = await runAction(() => window.api.switchAccount(state.selectedAccountId), "切换失败");
     if (result) {
       await handleResult(result, "切换失败");
-      if (result.ok) {
+      if (result.ok && !state.settings?.battleNetParallelLaunchEnabled) {
         await runAction(() => window.api.createAutoBackup(), "自动备份失败");
       }
       if (!result.ok && (result.failureReason === "AccessDenied" || result.failureReason === "StillClosing" || result.failureReason === "Respawned")) {
@@ -915,6 +922,31 @@ function bindStaticActions(): void {
     if (!result) {
       return;
     }
+    await refreshState();
+  });
+
+  (document.getElementById("battleNetParallelLaunchToggle") as HTMLInputElement).addEventListener("change", async (event) => {
+    const toggle = event.currentTarget as HTMLInputElement;
+    const nextValue = toggle.checked;
+    if (nextValue) {
+      const confirmation = await askConfirm(
+        "启用并行启动（实验）",
+        "多个 Battle.net 会共享当前 Windows 用户的配置和缓存。YBS 不会主动关闭已打开的战网，但战网仍可能回写共享状态。确认启用吗？"
+      );
+      if (!confirmation.confirmed) {
+        toggle.checked = false;
+        return;
+      }
+    }
+    const result = await runAction(
+      () => window.api.updateSettings({ battleNetParallelLaunchEnabled: nextValue }),
+      "战网多进程设置失败"
+    );
+    if (!result) {
+      toggle.checked = !nextValue;
+      return;
+    }
+    showNotice(nextValue ? "已启用并行启动实验模式。" : "已恢复标准切换模式。", "success");
     await refreshState();
   });
 

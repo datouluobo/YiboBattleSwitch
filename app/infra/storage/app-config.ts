@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   launchAtLogin: false,
   minimizeOnLaunch: false,
   skipSwitchConfirm: false,
+  battleNetParallelLaunchEnabled: false,
   acknowledgedSensitiveDataRisk: false,
   autoBackupEnabled: true,
   autoBackupDirectory: "",

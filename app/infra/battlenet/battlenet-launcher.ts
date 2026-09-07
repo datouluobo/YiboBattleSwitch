@@ -7,11 +7,17 @@ export async function launchBattleNet(): Promise<string> {
     throw new Error("未找到 Battle.net Launcher 路径。请先在设置中确认安装目录。");
   }
 
-  spawn(launcherPath, [], {
+  const child = spawn(launcherPath, [], {
     detached: true,
     stdio: "ignore",
     windowsHide: true
-  }).unref();
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    child.once("spawn", resolve);
+    child.once("error", reject);
+  });
+  child.unref();
 
   return launcherPath;
 }

@@ -9,12 +9,49 @@ import { restoreLatestBackup } from "../backup/restore-latest-backup.js";
 import { getAccountDisplayName } from "../../shared/account-display.js";
 import { SwitchAccountResult } from "../../shared/types/app.js";
 import { getSettings } from "../../infra/storage/app-config.js";
+import { readBattleNetConfig, setBattleNetMultiProcessEnabled, writeBattleNetConfig } from "../../infra/battlenet/battlenet-config.js";
 
 async function wait(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function switchAccount(accountId: string): Promise<SwitchAccountResult> {
+let switchInProgress = false;
+
+async function launchAccountInParallel(
+  snapshot: NonNullable<Awaited<ReturnType<typeof readAccountSnapshot>>>,
+  displayName: string
+): Promise<SwitchAccountResult> {
+  const previousConfig = await readBattleNetConfig();
+
+  try {
+    await setBattleNetMultiProcessEnabled(true);
+    await restoreBattleNetSnapshotWithProfile(snapshot, `parallel-account:${displayName}`, "D");
+    await wait(350);
+    await launchBattleNet();
+    return {
+      ok: true,
+      message: `已并行启动账号：${displayName}。YBS 未主动关闭已打开的 Battle.net。`
+    };
+  } catch (error) {
+    let rollbackTriggered = false;
+    if (previousConfig.raw) {
+      try {
+        await writeBattleNetConfig(previousConfig.raw);
+        rollbackTriggered = true;
+      } catch {
+        rollbackTriggered = false;
+      }
+    }
+    await logger.error(`[parallel-switch] failed target=${displayName} error=${error instanceof Error ? error.stack || error.message : String(error)}`);
+    return {
+      ok: false,
+      message: `并行启动失败：${error instanceof Error ? error.message : String(error)}`,
+      rollbackTriggered
+    };
+  }
+}
+
+async function performSwitchAccount(accountId: string): Promise<SwitchAccountResult> {
   const settings = await getSettings();
   const account = await readAccount(accountId);
   const snapshot = await readAccountSnapshot(accountId);
@@ -29,9 +66,9 @@ export async function switchAccount(accountId: string): Promise<SwitchAccountRes
   const hasAuthMaterial = Boolean(snapshot.registry.wow.WEB_TOKEN?.value || Object.keys(snapshot.registry.unifiedAuth).length);
   const displayName = getAccountDisplayName(account);
   await logger.info(
-    `[switch] profile=${settings.battleNetSwitchProfile} target=${displayName || accountId} config=${hasConfig} auth=${hasAuthMaterial} roaming=${Object.keys(snapshot.fileBlobs || {}).length} local=${Object.keys(snapshot.localFiles || {}).length} authSummary=${formatBattleNetAuthMaterialSummary(snapshot)}`
+    `[switch] mode=${settings.battleNetParallelLaunchEnabled ? "parallel" : "standard"} profile=${settings.battleNetParallelLaunchEnabled ? "D" : settings.battleNetSwitchProfile} target=${displayName || accountId} config=${hasConfig} auth=${hasAuthMaterial} roaming=${Object.keys(snapshot.fileBlobs || {}).length} local=${Object.keys(snapshot.localFiles || {}).length} authSummary=${formatBattleNetAuthMaterialSummary(snapshot)}`
   );
-  const requireAuthMaterial = settings.battleNetSwitchProfile === "N";
+  const requireAuthMaterial = !settings.battleNetParallelLaunchEnabled && settings.battleNetSwitchProfile === "N";
   if (!hasConfig || (requireAuthMaterial && !hasAuthMaterial)) {
     return {
       ok: false,
@@ -39,6 +76,10 @@ export async function switchAccount(accountId: string): Promise<SwitchAccountRes
         ? "目标账号缺少完整切换材料。请先在该账号的正常登录态下重新执行一次“保存当前登录”。"
         : "目标账号缺少 Battle.net.config 切换材料。请先在该账号的正常登录态下重新执行一次“保存当前登录”。"
     };
+  }
+
+  if (settings.battleNetParallelLaunchEnabled) {
+    return launchAccountInParallel(snapshot, displayName);
   }
 
   await createBackup(`before-switch-${accountId}`);
@@ -71,5 +112,21 @@ export async function switchAccount(accountId: string): Promise<SwitchAccountRes
       message: `切换失败，已尝试回滚：${error instanceof Error ? error.message : String(error)}`,
       rollbackTriggered: true
     };
+  }
+}
+
+export async function switchAccount(accountId: string): Promise<SwitchAccountResult> {
+  if (switchInProgress) {
+    return {
+      ok: false,
+      message: "已有账号切换或并行启动操作正在执行，请稍后再试。"
+    };
+  }
+
+  switchInProgress = true;
+  try {
+    return await performSwitchAccount(accountId);
+  } finally {
+    switchInProgress = false;
   }
 }

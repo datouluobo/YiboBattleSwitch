@@ -17,6 +17,7 @@ export interface RendererAppSettings {
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
   skipSwitchConfirm: boolean;
+  battleNetParallelLaunchEnabled: boolean;
   revealedAccountIds?: string[];
   lastSelectedAccountId: string;
   windowBounds?: {

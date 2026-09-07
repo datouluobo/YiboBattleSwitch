@@ -47,6 +47,7 @@ export interface AppSettings {
   launchAtLogin: boolean;
   minimizeOnLaunch: boolean;
   skipSwitchConfirm: boolean;
+  battleNetParallelLaunchEnabled: boolean;
   acknowledgedSensitiveDataRisk: boolean;
   autoBackupEnabled: boolean;
   autoBackupDirectory: string;
@@ -72,6 +73,7 @@ export interface AppStateDto {
   currentAccountId?: string;
   currentLocalFileCount?: number;
   currentBrowserCacheFileCount?: number;
+  battleNetMultiProcessEnabled: boolean;
   wowAccounts: string[];
   accountCount: number;
   permissionLabel: string;

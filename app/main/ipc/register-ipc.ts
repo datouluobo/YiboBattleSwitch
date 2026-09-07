@@ -20,7 +20,7 @@ import { selectDirectory, selectImportSource } from "../shell/dialogs.js";
 import { closeMainWindow, getMainWindow, getWindowState, minimizeMainWindow, toggleMainWindowMaximize } from "../window/main-window.js";
 import { refreshTrayMenu } from "../window/tray.js";
 import { detectBattleNetLauncherPath, detectDefaultGameDirectory, normalizeInstallDirectory } from "../../infra/battlenet/battlenet-paths.js";
-import { readBattleNetConfig } from "../../infra/battlenet/battlenet-config.js";
+import { isBattleNetMultiProcessEnabled, readBattleNetConfig, setBattleNetMultiProcessEnabled } from "../../infra/battlenet/battlenet-config.js";
 import { detectBattleNetAccountLabel } from "../../infra/battlenet/battlenet-account-label.js";
 import { readCurrentBattleNetIdentity } from "../../infra/battlenet/battlenet-current-identity.js";
 import { readBattleNetLocalState } from "../../infra/battlenet/battlenet-local-state.js";
@@ -207,6 +207,7 @@ async function buildAppState(): Promise<AppStateDto> {
     currentAccountId: currentIdentity?.accountId || "",
     currentLocalFileCount,
     currentBrowserCacheFileCount,
+    battleNetMultiProcessEnabled: isBattleNetMultiProcessEnabled(config.json),
     wowAccounts: registrySummary.slice(1),
     accountCount: accounts.length,
     permissionLabel: "普通权限",
@@ -228,6 +229,10 @@ export function registerIpc(): void {
   ipcMain.handle(IPC_CHANNELS.GET_SETTINGS, async () => getSettings());
 
   ipcMain.handle(IPC_CHANNELS.UPDATE_SETTINGS, async (_event, patch) => {
+    if (typeof patch?.battleNetParallelLaunchEnabled === "boolean") {
+      await setBattleNetMultiProcessEnabled(patch.battleNetParallelLaunchEnabled);
+      await logger.info(`Battle.net multi-process setting updated: enabled=${patch.battleNetParallelLaunchEnabled}`);
+    }
     const next = await updateSettings(patch);
     await logger.info(`Settings updated: ${JSON.stringify(patch)}`);
     return next;

@@ -41,6 +41,27 @@ export async function writeBattleNetConfig(raw: string): Promise<void> {
   await fs.writeFile(configPath, raw, "utf8");
 }
 
+export function isBattleNetMultiProcessEnabled(configJson: unknown): boolean {
+  if (!isRecord(configJson) || !isRecord(configJson.Client)) {
+    return false;
+  }
+  return configJson.Client.SingleInstance === false;
+}
+
+export async function setBattleNetMultiProcessEnabled(enabled: boolean): Promise<void> {
+  const current = await readBattleNetConfig();
+  if (!isRecord(current.json)) {
+    throw new Error("Battle.net.config 不存在或格式无效，无法同步战网多进程设置。");
+  }
+
+  const config = structuredClone(current.json);
+  if (!isRecord(config.Client)) {
+    config.Client = {};
+  }
+  (config.Client as Record<string, unknown>).SingleInstance = !enabled;
+  await writeBattleNetConfig(`${JSON.stringify(config, null, 4)}\n`);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
